@@ -284,6 +284,13 @@ androidComponents {
     }
 
     onVariants(selector().all()) { variant ->
+        // No Maps-linked legacy pass callbacks. Modern PaymentsClient stays intact.
+        variant.instrumentation.transformClassesWith(
+                org.icegram.gradle.WalletCallbacksVisitorFactory,
+                com.android.build.api.instrumentation.InstrumentationScope.ALL) { }
+        variant.instrumentation.setAsmFramesComputationMode(
+                com.android.build.api.instrumentation.FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS)
+
         def appTypeFlavorName = variant.productFlavors.find { it.first == "appType" }?.second
         def apiFlavorName = variant.productFlavors.find { it.first == "minApi" }?.second
         if (appTypeFlavorName == null || apiFlavorName == null) {

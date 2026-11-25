@@ -12,6 +12,10 @@
   использование policy в ImageLoader, сохранение full/плагинов и отключение карт.
 - `python3 Tools/icegram/test-apk.py`: тесты проверки содержимого APK на
   искусственных архивах. Это не сборка или проверка настоящего APK.
+- `bash gradlew :buildSrc:testWalletCallbacks`: на официальном Wallet 19.2.1
+  проверяет удаление только старых Binder-транзакций 1/2, неизменность всех
+  остальных 17 веток (включая isReadyToPay/PaymentData), JVM-стеки и отказ при
+  неожиданном изменении SDK. Это не runtime-проверка Google Pay.
 - JDK 17, Python 3.11 и toolchain из `ICEGRAM.md`, затем
   `bash gradlew :TMessagesProj:generateAppIcons :TMessagesProj:assembleFullArm64Debug`:
   Java/Kotlin, ресурсы, manifest merge, JNI и Python SDK плагинов.
@@ -22,8 +26,13 @@
   библиотеки Python/hooking и Python 3.11 bytecode SDK. Проверяет отсутствие
   Maps metadata и исходных Maps class descriptors; одна эта проверка DEX
   не исключает обфусцированные классы и не заменяет проверку зависимостей.
-  У Wallet 19.2.1 есть неиспользуемый API карт лояльности со ссылкой на
-  Maps `LatLng`: R8 подавляет только этот отсутствующий тип и через
+   У Wallet 19.2.1 есть неиспользуемый API карт лояльности со ссылкой на
+   Maps `LatLng`: buildSrc до R8 удаляет только legacy Binder callbacks
+   MaskedWallet/FullWallet, которые приложение не использует. SHA-256
+   канонического диспетчера закреплён; смена SDK требует повторной проверки.
+   Современные PaymentsClient callbacks, Firebase PNV и Cast не отключаются.
+   ASM остаётся только инструментом сборки, в APK не добавляется.
+   R8 подавляет только отсутствующий `LatLng` и через
   `-checkdiscard` требует удаления всех девяти ссылающихся на него классов
   Wallet. Возврат `LatLng` в DEX также отклоняется проверкой APK.
   В artifact сохраняется `ICEGRAM_APK_VERIFICATION.json` с SHA-256 и явной

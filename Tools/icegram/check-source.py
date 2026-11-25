@@ -139,6 +139,17 @@ def integration():
     check("python-version: '3.11'" in workflow and "BUILD_PYTHON=" in workflow, "Full build needs explicit Python 3.11")
     check(":TMessagesProj:generateAppIcons" in workflow, "Build must regenerate launcher assets")
     check("bash gradlew" in workflow, "Upstream Gradle wrapper requires Bash, not POSIX sh")
+    check(":buildSrc:testWalletCallbacks" in workflow,
+          "Release must test the Wallet callback bytecode transform")
+    check("org.icegram.gradle.WalletCallbacksVisitorFactory" in gradle and
+          "InstrumentationScope.ALL" in gradle,
+          "Maps-free Wallet transform must include the external dependency")
+    factory = text(ROOT / "buildSrc/src/main/java/org/icegram/gradle/WalletCallbacksVisitorFactory.java")
+    check("WalletLegacyCallbacks.CLASS_NAME.equals(classData.getClassName())" in factory,
+          "Wallet transform must match only the exact callback class")
+    callbacks = text(ROOT / "buildSrc/src/main/java/org/icegram/gradle/WalletLegacyCallbacks.java")
+    check("EXPECTED_HASH.equals(hash)" in callbacks and "new int[] {1, 2}" in callbacks,
+          "Wallet transform must fail closed and remove only legacy transactions")
     report = text(ROOT / "Tools/icegram/r8-report.init.gradle")
     check("if (app == null)" in report, "R8 diagnostic script must skip buildSrc/included builds")
     check("config.incoming.artifactView" in report and

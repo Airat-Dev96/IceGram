@@ -81,6 +81,7 @@ jobs:
             *) exit 1 ;;
           esac
           bash gradlew \
+            :buildSrc:testWalletCallbacks \
             :TMessagesProj:generateAppIcons \
             ":TMessagesProj:assemble${variant}" \
             --no-daemon --max-workers=2 \

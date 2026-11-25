@@ -166,6 +166,9 @@ sh gradlew :TMessagesProj:generateAppIcons \
 - **Build icegram APK** — ручная сборка подписанного **full release** с
   плагинами, без встроенных карт, для ARM64/ARMv7. Настраивает Python 3.11
   и генерирует значок перед Android-сборкой.
+  SDK 37 устанавливается пакетом `platforms;android-37.0` (не `android-37`).
+  Перед публикацией artifact проверяются подпись и состав настоящего APK;
+  результат сохраняется в `ICEGRAM_APK_VERIFICATION.json`. Это не runtime-тест.
   Нужно сначала опубликовать настоящий форк с подмодулями и настроить secrets:
   `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `GOOGLE_SERVICES_JSON_BASE64`,
   `ICEGRAM_KEYSTORE_BASE64`, `ICEGRAM_STORE_PASSWORD`,

@@ -7,6 +7,7 @@ build/
 obj/
 
 output-metadata.json
+/ICEGRAM_APK_VERIFICATION.json
 local.properties
 API_KEYS
 

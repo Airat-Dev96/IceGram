@@ -10,10 +10,22 @@
 - `python3 Tools/icegram/check-source.py`: XML, русские/английские строки,
   имя пакета, launcher alias, отсутствие чужого Firebase config,
   использование policy в ImageLoader, сохранение full/плагинов и отключение карт.
+- `python3 Tools/icegram/test-apk.py`: тесты проверки содержимого APK на
+  искусственных архивах. Это не сборка или проверка настоящего APK.
 - JDK 17, Python 3.11 и toolchain из `ICEGRAM.md`, затем
   `sh gradlew :TMessagesProj:generateAppIcons :TMessagesProj:assembleFullArm64Debug`:
   Java/Kotlin, ресурсы, manifest merge, JNI и Python SDK плагинов.
   Затем обязательно `assembleFullArm64Release` с R8 и тем же шагом генерации.
+- После сборки CI запускает `python3 Tools/icegram/verify-apk.py --abi arm64`:
+  проверяет настоящую APK-подпись через `apksigner`, совпадение сертификата с
+  постоянным ключом, пакет, имя, launcher alias, единственную ABI, ELF-заголовки,
+  библиотеки Python/hooking и Python 3.11 bytecode SDK. Проверяет отсутствие
+  Maps metadata и исходных Maps class descriptors; одна эта проверка DEX
+  не исключает обфусцированные классы и не заменяет проверку зависимостей.
+  В artifact сохраняется `ICEGRAM_APK_VERIFICATION.json` с SHA-256 и явной
+  отметкой, что runtime-тесты ещё не выполнены. Значения API/подписи не выводятся.
+  Локально можно передать `--apk`, `--build-tools` и публичный DER-сертификат
+  через `--certificate`, не передавая пароли в командной строке.
 
 ## На устройстве
 

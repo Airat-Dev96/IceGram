@@ -26,3 +26,5 @@ jobs:
         run: sh Tools/icegram/test-policy.sh
       - name: Validate resources and fork integration
         run: python3 Tools/icegram/check-source.py
+      - name: Test APK verification checks with fixtures
+        run: python3 Tools/icegram/test-apk.py

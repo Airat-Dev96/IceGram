@@ -191,7 +191,7 @@ def integration():
 
 def private_files():
     ignore = text(ROOT / ".gitignore")
-    for entry in ("API_KEYS", "!API_KEYS.example", "*.jks", "TMessagesProj/google-services.json"):
+    for entry in ("API_KEYS", "!API_KEYS.example", "*.jks", "/google-services.json", "TMessagesProj/google-services.json"):
         check(entry in ignore.splitlines(), f"Missing private-file ignore rule: {entry}")
     firebase = ROOT / "TMessagesProj/google-services.json"
     if firebase.exists():
@@ -203,13 +203,13 @@ def private_files():
             check(False, "Invalid private Firebase config (values hidden)")
     if (ROOT / ".git").exists() and shutil.which("git"):
         tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, check=True, capture_output=True).stdout.decode().split("\0")
-        check(not any(path == "API_KEYS" or path.endswith((".jks", "/google-services.json")) for path in tracked),
+        check(not any(path in ("API_KEYS", "google-services.json") or path.endswith((".jks", "/google-services.json")) for path in tracked),
               "Private build configuration is tracked by Git")
     else:
         print("NOTE: no Git metadata/tool; tracked-secret check skipped.")
     for name in ("LICENSE", "ADDITIONAL_TERMS.md", "ICEGRAM.md"):
         check((ROOT / name).is_file() and (ROOT / name).stat().st_size > 0, f"Missing attribution/license: {name}")
-    for path in (ROOT / "Tools/icegram/prepare-ci.py", Path(__file__).resolve()):
+    for path in (ROOT / "Tools/icegram").glob("*.py"):
         compile(text(path), str(path), "exec")
 
 

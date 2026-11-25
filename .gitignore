@@ -30,6 +30,7 @@ invisible.txt
 # All API key files
 API_KEYS*
 !API_KEYS.example
+/google-services.json
 TMessagesProj/google-services.json
 
 # Kotlin compiler temp files

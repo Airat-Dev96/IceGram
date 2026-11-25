@@ -48,6 +48,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          # Legacy "tools" was removed from the Android SDK repository.
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
       - name: Install matching Android toolchain
         shell: bash
         run: |

@@ -12,6 +12,10 @@ def isRule = { String name ->
 
 gradle.projectsEvaluated {
     def app = gradle.rootProject.findProject(':TMessagesProj')
+    // Init scripts also run for buildSrc and included builds.
+    if (app == null) {
+        return
+    }
     ['Arm64', 'Armv7'].each { abi ->
         app.tasks.register("icegramR8${abi}Report") {
             group = 'verification'

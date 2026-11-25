@@ -9,8 +9,6 @@
     <uses-feature android:name="android.hardware.LOCATION" android:required="false" />
 
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="${applicationId}.permission.MAPS_RECEIVE"/>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
@@ -19,11 +17,10 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <permission android:name="${applicationId}.permission.MAPS_RECEIVE" android:protectionLevel="signature"/>
 
     <application
-        android:icon="@mipmap/ic_launcher_beta"
-        android:roundIcon="@mipmap/ic_launcher_beta"
+        android:icon="@mipmap/ic_icegram_launcher"
+        android:roundIcon="@mipmap/ic_icegram_launcher"
         android:label="@string/exteraAppName"
         android:theme="@style/Theme.TMessages.Start"
         android:name=".ApplicationLoader"
@@ -40,7 +37,6 @@
             </intent-filter>
         </service>
 
-        <uses-library android:name="com.google.android.maps" android:required="false"/>
 
 <!--        <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />-->
 <!--        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />-->

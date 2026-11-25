@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="IcegramSettings">icegram · Лёгкость и удобство</string>
+    <string name="IcegramPerformance">Быстродействие</string>
+    <string name="IcegramApplyPreset">Применить Ice Mode</string>
+    <string name="IcegramPresetInfo">Отключить необязательные анимации, размытие и автозапуск GIF и видео. Отдельные эффекты можно настроить ниже.</string>
+    <string name="IcegramCompactCache">Компактный кэш изображений</string>
+    <string name="IcegramCompactCacheInfo">До 20 МиБ суммарно для кэшей изображений, миниатюр, обоев и анимаций. Это не лимит всей ОЗУ приложения. Нужен перезапуск; изображения могут декодироваться чаще.</string>
+    <string name="IcegramLazyWidgets">Виджеты по требованию</string>
+    <string name="IcegramLazyWidgetsInfo">Не прогревать движок HTML-виджетов при запуске. Виджеты продолжат работать при открытии. Действует со следующего запуска.</string>
+    <string name="IcegramAnimationSettings">Анимации и энергосбережение</string>
+    <string name="IcegramDataSettings">Трафик и автозагрузка</string>
+    <string name="IcegramNoMagic">Сообщения, звонки и уведомления не отключаются. Меньший кэш может экономить память ценой повторного декодирования; результат нужно измерять на устройстве.</string>
+    <string name="IcegramComfort">Полезные мелочи</string>
+    <string name="IcegramHidePhoneInfo">Скрыть свой номер в интерфейсе, например при демонстрации экрана. Это не меняет настройки приватности Telegram.</string>
+    <string name="IcegramSaveButton">Кнопка сохранения в меню сообщения</string>
+    <string name="IcegramSaveButtonInfo">Показывать существующее действие exteraGram для сохранения сообщения в «Избранное».</string>
+    <string name="IcegramAbout">Об icegram</string>
+    <string name="IcegramIconInfo">Значок icegram с кристаллом льда.</string>
+    <string name="IcegramMapsDisabled">Карты и выбор места на карте не включены в icegram.</string>
+    <string name="IcegramPluginsKept">Движок плагинов exteraGram сохранён. Устанавливайте только доверенные плагины: они работают с правами приложения. Python и hooking увеличивают размер APK.</string>
+    <string name="IcegramAttribution">На основе exteraGram</string>
+    <string name="IcegramForkInfo">icegram — независимый изменённый клиент на основе exteraGram и Telegram для Android. Не является официальной версией Telegram или exteraGram. Лицензия GPL; см. LICENSE и ADDITIONAL_TERMS.md в исходниках.</string>
+</resources>

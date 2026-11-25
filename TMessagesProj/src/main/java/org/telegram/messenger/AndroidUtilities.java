@@ -1899,6 +1899,10 @@ public class AndroidUtilities {
     }
 
     public static boolean isMapsInstalled(BaseFragment fragment) {
+        if (!org.icegram.messenger.IcegramConfig.areMapsEnabled()) {
+            org.icegram.messenger.NoMapsProvider.showDisabled();
+            return false;
+        }
         String pkg = ApplicationLoader.getMapsProvider().getMapsAppPackageName();
         try {
             ApplicationLoader.applicationContext.getPackageManager().getApplicationInfo(pkg, 0);
@@ -2976,6 +2980,9 @@ public class AndroidUtilities {
     }
 
     public static String formapMapUrl(int account, double lat, double lon, int width, int height, boolean marker, int zoom, int provider) {
+        if (!org.icegram.messenger.IcegramConfig.areMapsEnabled()) {
+            return org.icegram.messenger.NoMapsProvider.PLACEHOLDER_URI;
+        }
         int scale = Math.min(2, (int) Math.ceil(AndroidUtilities.density));
         if (provider == -1) {
             provider = MessagesController.getInstance(account).mapProvider;

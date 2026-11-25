@@ -1,0 +1,9 @@
+{
+  "name": "icegram",
+  "upstream": "https://github.com/exteraSquad/exteraGram",
+  "commit": "b4d852f48f2734a0bee1a74a0939be621612262a",
+  "upstream_version": "13.2.2",
+  "upstream_commit_date": "2026-11-24T17:33:57Z",
+  "source_format": "GitHub source archive; submodules must be initialized with Git",
+  "license": "GPL-3.0-or-later with upstream additional terms"
+}

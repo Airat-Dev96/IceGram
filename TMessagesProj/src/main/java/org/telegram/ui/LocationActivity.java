@@ -311,6 +311,10 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
 
     @Override
     public boolean onFragmentCreate() {
+        if (!org.icegram.messenger.IcegramConfig.areMapsEnabled()) {
+            org.icegram.messenger.NoMapsProvider.showDisabled();
+            return false;
+        }
         super.onFragmentCreate();
         getNotificationCenter().addWeakObserver(this, NotificationCenter.closeChats);
         NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.locationPermissionGranted);

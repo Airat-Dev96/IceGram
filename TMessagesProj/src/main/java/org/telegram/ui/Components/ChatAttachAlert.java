@@ -4563,6 +4563,11 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
 
     @Override
     public void show() {
+        if (!org.icegram.messenger.IcegramConfig.areMapsEnabled()
+                && (isStoryLocationPicker || isBizLocationPicker || isLocationPicker)) {
+            org.icegram.messenger.NoMapsProvider.showDisabled();
+            return;
+        }
         super.show();
         buttonPressed = false;
         if (baseFragment instanceof ChatActivity) {

@@ -75,22 +75,13 @@ public class UpdaterUtils {
     private static AlertDialog dialog;
 
     public static void getAppUpdate(Utilities.Callback2<TLRPC.TL_help_appUpdate, TLRPC.TL_error> callback) {
-        RemoteUtils.getMessages((res, err) -> {
-            if (err != null || res == null) {
-                callback.run(null, err);
-                return;
-            }
-
-            TLRPC.TL_help_appUpdate update = parseUpdateResponse(res);
-
-            if (update.id > 0) {
-                callback.run(update, null);
-            } else {
-                var error = new TLRPC.TL_error();
-                error.text = "NO_UPDATE_METADATA";
-                callback.run(update, error);
-            }
-        });
+        // icegram must never offer an APK from another application's update feed.
+        // Keep asynchronous completion so callers can start and end their progress UI.
+        AndroidUtilities.runOnUIThread(() -> {
+            TLRPC.TL_error error = new TLRPC.TL_error();
+            error.text = "ICEGRAM_UPDATER_DISABLED";
+            callback.run(null, error);
+        }, 1);
     }
 
     private static TLRPC.TL_help_appUpdate parseUpdateResponse(TLRPC.messages_Messages res) {

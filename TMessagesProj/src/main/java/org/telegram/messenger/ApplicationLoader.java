@@ -132,7 +132,7 @@ public class ApplicationLoader extends Application implements Provider {
     }
 
     protected IMapsProvider onCreateMapsProvider() {
-        return new GoogleMapsProvider();
+        return new org.icegram.messenger.NoMapsProvider();
     }
 
     public static PushListenerController.IPushListenerServiceProvider getPushProvider() {
@@ -177,7 +177,7 @@ public class ApplicationLoader extends Application implements Provider {
         } catch (Exception e) {
             FileLog.e(e);
         }
-        return new File("/data/data/com.exteragram.messenger/files");
+        return new File("/data/data/" + getApplicationId() + "/files");
     }
 
     public static File getFilesDirFixed(String child) {
@@ -284,10 +284,11 @@ public class ApplicationLoader extends Application implements Provider {
             DownloadController.getInstance(a);
         }
         BillingController.getInstance().startConnection();
-        // HTML widgets: the isolated engine's process up front, after the app's own start, so that a widget's first
-        // frame does not wait for it.
-        AndroidUtilities.runOnUIThread(() -> Utilities.globalQueue.postRunnable(
-                () -> org.telegram.utils.twidget.WidgetSandboxSession.prewarmEngine(applicationContext)), 3000);
+        // icegram: widgets remain available, but skip their idle process on startup by default.
+        if (!org.icegram.messenger.IcegramConfig.isLazyWidgetsEnabled()) {
+            AndroidUtilities.runOnUIThread(() -> Utilities.globalQueue.postRunnable(
+                    () -> org.telegram.utils.twidget.WidgetSandboxSession.prewarmEngine(applicationContext)), 3000);
+        }
     }
 
     public ApplicationLoader() {

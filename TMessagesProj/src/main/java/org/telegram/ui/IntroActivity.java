@@ -791,10 +791,18 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
             loadTexture(R.drawable.intro_powerful_star, 18);
             loadTexture(R.drawable.intro_private_door, 19);
             loadTexture(R.drawable.intro_private_screw, 20);
-            loadTexture(R.drawable.intro_etg_arrow, 21);
+            loadTexture(v -> {
+                int size = AndroidUtilities.dp(ICON_HEIGHT_DP);
+                Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                Drawable icon = ContextCompat.getDrawable(ApplicationLoader.applicationContext,
+                        R.drawable.ic_icegram_foreground).mutate();
+                icon.setBounds(0, 0, size, size);
+                icon.draw(new Canvas(bitmap));
+                return bitmap;
+            }, 21);
             loadTexture(v -> {
                 Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                paint.setColor(ContextCompat.getColor(ApplicationLoader.applicationContext, R.color.ic_background));
+                paint.setColor(ContextCompat.getColor(ApplicationLoader.applicationContext, R.color.icegram_icon_background));
                 int size = AndroidUtilities.dp(ICON_HEIGHT_DP);
                 Bitmap bm = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bm);

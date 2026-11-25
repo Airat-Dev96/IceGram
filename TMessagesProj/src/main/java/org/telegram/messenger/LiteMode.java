@@ -236,10 +236,10 @@ public class LiteMode {
     }
 
     public static void setAllFlags(int flags) {
-        // in settings it is already handled. would you handle it? 🫵
-        // onFlagsUpdate(value, flags);
+        int previous = getValue(true);
         value = flags;
         savePreference();
+        onFlagsUpdate(previous, flags);
     }
 
     public static void updatePresets(TLRPC.TL_jsonObject json) {
@@ -269,12 +269,10 @@ public class LiteMode {
     }
 
     public static void loadPreference() {
-        int defaultValue = PRESET_HIGH, batteryDefaultValue = BATTERY_HIGH;
+        int defaultValue = 0, batteryDefaultValue = BATTERY_HIGH;
         if (SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW) {
-            defaultValue = PRESET_LOW;
             batteryDefaultValue = BATTERY_LOW;
         } else if (SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_AVERAGE) {
-            defaultValue = PRESET_MEDIUM;
             batteryDefaultValue = BATTERY_MEDIUM;
         }
 
@@ -351,7 +349,7 @@ public class LiteMode {
             onFlagsUpdate(prevValue, value);
         }
         powerSaverLevel = preferences.getInt("lite_mode_battery_level", batteryDefaultValue);
-        powerSaverFollowSystem = preferences.getBoolean("lite_mode_battery_follow_system", false);
+        powerSaverFollowSystem = preferences.getBoolean("lite_mode_battery_follow_system", true);
         loaded = true;
     }
 
@@ -415,7 +413,7 @@ public class LiteMode {
     }
 
     private static void onFlagsUpdate(int oldValue, int newValue) {
-        int changedFlags = ~oldValue & newValue;
+        int changedFlags = oldValue ^ newValue;
         if ((changedFlags & FLAGS_ANIMATED_EMOJI) > 0) {
             AnimatedEmojiDrawable.updateAll();
         }

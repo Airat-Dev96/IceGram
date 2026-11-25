@@ -230,7 +230,7 @@ fun setProxyDisabledOn(condition: ProxyDisableCondition, disable: Boolean) {
     doNotUseProxy = if (disable) doNotUseProxy or condition.flag else doNotUseProxy and condition.flag.inv()
 }
 
-var customSavePath by StringPref("exteraGram")
+var customSavePath by StringPref("icegram")
 
 var doNotMarkAsNew = ArrayList<String>()
 var newFeaturesShowedAt = HashMap<String, Long>()
@@ -288,10 +288,10 @@ var playerMode by IntegerPref(0)
 var tabletMode by IntegerPref(0)
 var tabletLeftFraction by FloatPref(0.35f)
 var useSystemFonts by BooleanPref(true)
-var gooeyAvatarAnimation by BooleanPref(true)
+var gooeyAvatarAnimation by BooleanPref(false)
 var customThemes by BooleanPref(true)
 var predictiveBackIntensity by FloatPref(1.0f)
-var transitionAnimation by EnumPref(TransitionAnimation.SPRING)
+var transitionAnimation by EnumPref(TransitionAnimation.DEFAULT)
 val springAnimations get() = transitionAnimation == TransitionAnimation.SPRING
 val aospTransitions get() = transitionAnimation == TransitionAnimation.AOSP
 val springSwipeback get() = transitionAnimation != TransitionAnimation.DEFAULT
@@ -383,7 +383,7 @@ var rememberLastUsedCamera by BooleanPref(false)
 var startWithWideAngleCamera by BooleanPref(false)
 var zoomSlider by BooleanPref(true)
 var staticZoom by BooleanPref(false)
-var alwaysSendInHD by BooleanPref(true)
+var alwaysSendInHD by BooleanPref(false)
 var hideCameraTile by BooleanPref(false)
 
 var doubleTapSeekDuration by IntegerPref(1)
@@ -400,7 +400,7 @@ var messageExportAuthors by BooleanPref(false)
 var messageExportTime by BooleanPref(true)
 
 // Other
-var useGoogleCrashlytics by BooleanPref(BuildVars.isBetaApp())
+var useGoogleCrashlytics by BooleanPref(false)
 var useGoogleAnalytics by BooleanPref(false)
 var enableAdBlock by BooleanPref(true)
 

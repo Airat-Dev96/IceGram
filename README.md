@@ -1,100 +1,69 @@
-<p align="center">
-  <img src="TMessagesProj/src/main/res-appicons/mipmap-xxxhdpi/ic_launcher.webp" width="96" alt="exteraGram">
-</p>
+# icegram
 
-<h1 align="center">exteraGram</h1>
+An independent Android Telegram client based on
+[exteraGram 13.2.2](https://github.com/exteraSquad/exteraGram).
+This is not an official Telegram or exteraGram release.
 
-<p align="center">
-  A third-party Telegram client for Android, built on the
-  <a href="https://github.com/DrKLO/Telegram">official sources</a>.
-</p>
+**Prototype: no APK has been built or tested yet.** Lower memory use, a smaller
+APK or better battery life have not been measured and are not guaranteed.
 
-<p align="center">
-  <a href="https://t.me/exteraGram"><img src="https://img.shields.io/badge/Channel-Telegram-blue.svg" alt="Channel"></a>
-  <a href="https://t.me/exteraChat"><img src="https://img.shields.io/badge/Chat-Telegram-blue.svg" alt="Chat"></a>
-  <a href="https://t.me/exteraReleases"><img src="https://img.shields.io/badge/Download-Telegram-blue.svg" alt="Download"></a>
-  <a href="https://crowdin.com/project/exteralocales"><img src="https://img.shields.io/badge/Translate-Crowdin-green.svg" alt="Crowdin"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-orange.svg" alt="License"></a>
-</p>
+## What changes
 
-## What it adds
+- A separate app name, icon and application ID: `org.icegram.messenger`.
+- The **full** edition retains Python plugins, their SDK and method hooking.
+- Embedded maps, map selection and map thumbnails are disabled; the Google Maps
+  SDK is excluded. Google Location remains available. No Maps API key is needed.
+- Smaller optional image caches, on-demand HTML widget startup and calmer
+  initial animation settings, with a dedicated icegram settings screen.
+- Upstream APK updates and default Analytics/Crashlytics collection are disabled.
+  Messaging, calls and push notifications are not intentionally disabled.
 
-- Plugins written in Python that can hook into the app, with their own settings and an SDK
-  ([`plugins-pysdk`](plugins-pysdk/README.md)).
-- Material You themes, icon packs and alternative app icons.
-- A long list of interface and chat options that the official client does not have.
+Full builds include Python and native plugin libraries. They are larger than
+lite builds, and plugins may themselves increase resource use.
 
-Releases are published in [@exteraReleases](https://t.me/exteraReleases).
+## Build on GitHub Actions
 
-## Editions
+Corresponding modified source:
+**<https://github.com/Airat-Dev96/IceGram>**.
 
-| Flavor | What is inside                                              | ABIs                                  |
-|--------|-------------------------------------------------------------|---------------------------------------|
-| `full` | Everything, including the Python runtime and plugins        | `armeabi-v7a`, `arm64-v8a`            |
-| `lite` | The same client without Python, plugins and method hooking  | `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64` |
+1. Select the branch containing the icegram changes and enable Actions in the fork.
+2. Add your own Telegram, Firebase and signing configuration in
+   **Settings → Secrets and variables → Actions**.
+3. Open **Actions → Build icegram APK → Run workflow**, select that branch
+   and `arm64` (or `armv7` for an older 32-bit phone).
+4. After a successful run, download the `icegram-full-*` artifact and extract
+   its APK. A successful build still requires the device checks below.
 
-The second flavor dimension picks the ABI: `armv7`, `arm64`, `x86`, `x64`, or `afat` for a universal
-ARM build. `beta` is a universal ARM build with beta naming.
+See [ICEGRAM.md](ICEGRAM.md) for the required secret names, toolchain,
+local build commands and Russian documentation. Never commit `API_KEYS`,
+`google-services.json`, signing keys or passwords.
 
-## Building
+The **icegram checks** workflow validates source integration and cache-budget
+policy without private keys. It does not compile the complete Android client.
+The release workflow builds one ARM architecture, including the plugin engine.
 
-### Requirements
+## Development
 
-- Android Studio with support for Android Gradle Plugin 9.1, or just JDK 17 and the command line
-- Android SDK 36 and NDK 29.0.14206865
-- Python 3.11 for the `full` flavor, on `PATH` as `python3.11` or set as `python.build` in
-  `local.properties`
+Use JDK 17, Android SDK 37, Build Tools 36.0.0, NDK 29.0.14206865,
+CMake 4.x and **Python 3.11**. Initialize the pinned submodules first.
+See [ICEGRAM.md](ICEGRAM.md) rather than the older upstream Dockerfile.
 
-### Steps
+Before distributing an APK, complete
+[the testing checklist](Tools/icegram/TESTING.md). Include a link to the exact
+source revision used to build it; the workflow adds this link to its artifact.
+Plugin SDK documentation is in [plugins-pysdk](plugins-pysdk/README.md).
 
-1. Clone the repository with its submodules:
-   ```bash
-   git clone --recursive --shallow-submodules https://github.com/exteraSquad/exteraGram.git
-   ```
-   If you cloned without `--recursive`:
-   ```bash
-   git submodule update --init --recursive --depth=1
-   ```
-2. Create a file named `API_KEYS` in the repository root:
-   ```
-   APP_ID = 123456
-   APP_HASH = "abcdef0123456789abcdef0123456789"
-   MAPS_V2_API = your-google-maps-key
+## Credits and license
 
-   SIGNING_KEY_PASSWORD = key-password
-   SIGNING_KEY_ALIAS = key-alias
-   SIGNING_KEY_STORE_PASSWORD = keystore-password
-   ```
-   Get your own `APP_ID` and `APP_HASH` at <https://core.telegram.org/api/obtaining_api_id> and a
-   Maps key in the [Google Cloud console](https://console.cloud.google.com/google/maps-apis/credentials).
-   Do not ship builds with someone else's keys.
-3. [Generate a signing key](https://developer.android.com/studio/publish/app-signing#generate-key)
-   and save the keystore as `TMessagesProj/config/exteraGram.jks`. Debug builds are signed with it
-   too.
-4. Build:
-   ```bash
-   ./gradlew :TMessagesProj:assembleFullArm64Debug
-   ```
-   The APK appears in `TMessagesProj/build/outputs/apk/`. Other variants follow the same pattern:
-   `assembleLiteArm64Release`, `assembleFullAfatRelease`, `assembleFullBetaDebug`.
+Based on [exteraGram](https://github.com/exteraSquad/exteraGram) and
+[Telegram for Android](https://github.com/DrKLO/Telegram).
+Upstream authorship and copyright notices are retained.
 
-A `full` build compiles the plugins SDK from `plugins-pysdk/` and downloads a prebuilt plugin
-analyzer from GitHub; the analyzer is cached in `Tools/temp` for offline builds.
+Upstream also credits [Catogram](https://github.com/Catogram/Catogram),
+[Nekogram](https://gitlab.com/Nekogram/Nekogram),
+[OwlGram](https://github.com/OwlGramDev/OwlGram) and
+[Crowdin translators](https://crowdin.com/project/exteralocales).
 
-## Translations
-
-Telegram's own strings come from the
-[official translations](https://translations.telegram.org/en/android/). Strings that exist only in
-exteraGram are translated on [Crowdin](https://crowdin.com/project/exteralocales).
-
-## Thanks
-
-- [Telegram for Android](https://github.com/DrKLO/Telegram)
-- [Catogram](https://github.com/Catogram/Catogram)
-- [Nekogram](https://gitlab.com/Nekogram/Nekogram)
-- [OwlGram](https://github.com/OwlGramDev/OwlGram)
-
-## License
-
-[GNU General Public License v3.0 or later](LICENSE), with [additional terms](ADDITIONAL_TERMS.md)
-about attribution and the use of the exteraGram name and logo.
+[GNU General Public License v3.0 or later](LICENSE), with
+[additional terms](ADDITIONAL_TERMS.md) concerning attribution and the use of
+the exteraGram name and logo. icegram uses its own launcher branding.

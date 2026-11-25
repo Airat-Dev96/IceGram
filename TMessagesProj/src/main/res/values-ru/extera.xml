@@ -12,8 +12,8 @@
 -->
 
 <resources>
-    <string name="exteraAppName" translatable="false">exteraGram</string>
-    <string name="Preferences">Настройки exteraGram</string>
+    <string name="exteraAppName" translatable="false">icegram</string>
+    <string name="Preferences">Настройки icegram</string>
 
     <!-- Главное меню -->
     <string name="Links">Ссылки</string>

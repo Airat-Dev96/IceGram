@@ -45,6 +45,9 @@ public class ImageLocation {
         if (path == null) {
             return null;
         }
+        if (org.icegram.messenger.NoMapsProvider.PLACEHOLDER_URI.equals(path)) {
+            return null;
+        }
         ImageLocation imageLocation = new ImageLocation();
         imageLocation.path = path;
         return imageLocation;
@@ -83,6 +86,11 @@ public class ImageLocation {
 
     public static ImageLocation getForWebFile(WebFile webFile) {
         if (webFile == null) {
+            return null;
+        }
+        // Also suppress map thumbnails fetched through Telegram, not just Google URLs.
+        if (!org.icegram.messenger.IcegramConfig.areMapsEnabled()
+                && webFile.location instanceof TLRPC.TL_inputWebFileGeoPointLocation) {
             return null;
         }
         ImageLocation imageLocation = new ImageLocation();

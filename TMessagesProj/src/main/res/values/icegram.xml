@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="icegram_icon_background">#102C46</color>
+    <string name="IcegramSettings">icegram · Light and comfortable</string>
+    <string name="IcegramPerformance">Performance</string>
+    <string name="IcegramApplyPreset">Apply Ice Mode</string>
+    <string name="IcegramPresetInfo">Turn off optional animations, blur and autoplay for GIFs and videos. Change individual effects below.</string>
+    <string name="IcegramCompactCache">Compact image cache</string>
+    <string name="IcegramCompactCacheInfo">Up to 20 MiB across the bitmap, thumbnail, wallpaper and animation caches. This is not a total RAM limit. Requires restart; may cause more image decoding.</string>
+    <string name="IcegramLazyWidgets">Load widgets on demand</string>
+    <string name="IcegramLazyWidgetsInfo">Skip prewarming the HTML widget engine at startup. Widgets still work when opened. Takes effect on next launch.</string>
+    <string name="IcegramAnimationSettings">Animations and power saving</string>
+    <string name="IcegramDataSettings">Data usage and automatic downloads</string>
+    <string name="IcegramNoMagic">Messages, calls and notifications are not disabled. A smaller cache can trade memory for extra decoding; measure on your own device.</string>
+    <string name="IcegramComfort">Useful shortcuts</string>
+    <string name="IcegramHidePhoneInfo">Hide your number in the local interface, for example during screen sharing. This does not change Telegram privacy settings.</string>
+    <string name="IcegramSaveButton">Save shortcut in message menu</string>
+    <string name="IcegramSaveButtonInfo">Show the existing exteraGram action for saving a message to Saved Messages.</string>
+    <string name="IcegramAbout">About icegram</string>
+    <string name="IcegramAttribution">Based on exteraGram</string>
+    <string name="IcegramForkInfo">icegram is an independent, modified client based on exteraGram and Telegram for Android. Not an official Telegram or exteraGram release. Licensed under GPL; see LICENSE and ADDITIONAL_TERMS.md in the source.</string>
+    <string name="IcegramIconName" translatable="false">icegram</string>
+    <string name="IcegramIconInfo">The icegram ice crystal icon.</string>
+    <string name="IcegramMapsDisabled">Maps and location pickers are not included in icegram.</string>
+    <string name="IcegramPluginsKept">The exteraGram plugin engine is included. Only install plugins you trust: they run with the app’s permissions. Python and hooking increase the APK size.</string>
+</resources>

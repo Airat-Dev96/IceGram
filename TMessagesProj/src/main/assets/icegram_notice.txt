@@ -1,0 +1,10 @@
+icegram is an independent modified version based on exteraGram and Telegram for Android.
+It is not an official Telegram or exteraGram release and is not endorsed by their authors.
+
+Upstream: https://github.com/exteraSquad/exteraGram
+Base revision: b4d852f48f2734a0bee1a74a0939be621612262a (13.2.2)
+License: GPL-3.0-or-later, with ADDITIONAL_TERMS.md from upstream.
+Original author and copyright notices remain in the source.
+
+Distributors must provide the corresponding modified source code under the license.
+Do not distribute this build using the exteraGram name, icons or somebody else's API keys.

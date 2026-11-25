@@ -1,0 +1,91 @@
+name: Build icegram APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      abi:
+        description: Device architecture
+        required: true
+        type: choice
+        default: arm64
+        options:
+          - arm64
+          - armv7
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: '2'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Select Python for full plugin engine
+        run: echo "BUILD_PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
+      - name: Prepare private build configuration
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          ICEGRAM_KEYSTORE_BASE64: ${{ secrets.ICEGRAM_KEYSTORE_BASE64 }}
+          ICEGRAM_STORE_PASSWORD: ${{ secrets.ICEGRAM_STORE_PASSWORD }}
+          ICEGRAM_KEY_PASSWORD: ${{ secrets.ICEGRAM_KEY_PASSWORD }}
+          ICEGRAM_KEY_ALIAS: ${{ secrets.ICEGRAM_KEY_ALIAS }}
+        run: python3 Tools/icegram/prepare-ci.py
+      - name: Fetch pinned submodules
+        run: git submodule update --init --recursive --depth=1 --jobs=4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install matching Android toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake_package=$(sdkmanager --list | awk '$1 ~ /^cmake;4\.[0-9]+\.[0-9]+$/ { print $1 }' | sort -Vu | tail -n 1)
+          test -n "$cmake_package" || { echo 'No stable Android CMake 4.x package available'; exit 1; }
+          sdkmanager 'platforms;android-37' 'build-tools;36.0.0' 'ndk;29.0.14206865' "$cmake_package"
+      - name: Run source and policy checks
+        run: |
+          sh Tools/icegram/test-policy.sh
+          python3 Tools/icegram/check-source.py
+      - name: Generate icegram icons and build single-ABI full release
+        env:
+          ICEGRAM_ABI: ${{ inputs.abi }}
+        run: |
+          case "$ICEGRAM_ABI" in
+            arm64) variant=FullArm64Release ;;
+            armv7) variant=FullArmv7Release ;;
+            *) exit 1 ;;
+          esac
+          sh gradlew \
+            :TMessagesProj:generateAppIcons \
+            ":TMessagesProj:assemble${variant}" \
+            --no-daemon --max-workers=2 \
+            '-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8'
+      - name: Record corresponding source revision
+        env:
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}
+        run: |
+          printf 'icegram corresponding source: %s\n' "$SOURCE_URL" > ICEGRAM_BUILD.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icegram-full-${{ inputs.abi }}-${{ github.run_number }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            TMessagesProj/build/outputs/apk/**/*.apk
+            LICENSE
+            ADDITIONAL_TERMS.md
+            ICEGRAM_BUILD.txt
+            ICEGRAM.md

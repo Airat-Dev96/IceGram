@@ -55,7 +55,8 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
         FORUM,
         CROWDIN,
         COMMUNITY,
-        SOURCE_CODE;
+        SOURCE_CODE,
+        ICEGRAM_CATEGORY;
 
         val id: Int = ordinal + 1
     }
@@ -80,7 +81,6 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
         headerSettingsCell = HeaderSettingsCell(context)
         fragmentView = super.createView(context)
         if (parentLayout?.isRightLayout == true) actionBar.setBackButtonImage(R.drawable.ic_ab_close)
-        requestCommunity()
         return fragmentView
     }
 
@@ -88,6 +88,7 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
         items.add(UItem.asCustomShadow(headerSettingsCell, 198).setId(PreferenceItem.HEADER_CELL.id))
 
         items.add(UItem.asHeader(getString(R.string.Categories)))
+        items.add(uButton(PreferenceItem.ICEGRAM_CATEGORY, getString(R.string.IcegramSettings), R.drawable.msg_settings))
         items.add(uButton(PreferenceItem.GENERAL_CATEGORY, getString(R.string.General), R.drawable.msg_media, linkAlias = "general"))
         items.add(uButton(PreferenceItem.APPEARANCE_CATEGORY, getString(R.string.Appearance), R.drawable.msg_theme, linkAlias = "appearance"))
         items.add(uButton(PreferenceItem.CHATS_CATEGORY, getString(R.string.SearchAllChatsShort), R.drawable.msg_discussion, linkAlias = "chats"))
@@ -108,7 +109,7 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
                 .setLinkAlias("chat", this)
         )
         items.add(uButton(PreferenceItem.CROWDIN, getString(R.string.Crowdin), R.drawable.msg_translate, "Crowdin", linkAlias = "crowdin"))
-        items.add(uButton(PreferenceItem.SOURCE_CODE, getString(R.string.SourceCode), R.drawable.msg_delete, "GitHub", showDivider = false, linkAlias = "sourceCode"))
+        items.add(uButton(PreferenceItem.SOURCE_CODE, getString(R.string.IcegramAttribution), R.drawable.msg_info, "GitHub", showDivider = false, linkAlias = "sourceCode"))
         items.add(UItem.asShadow())
     }
 
@@ -116,7 +117,8 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
         if (item.id <= 0 || item.id > PreferenceItem.entries.size) return
         val clickedItem = PreferenceItem.entries[item.id - 1]
         when (clickedItem) {
-            PreferenceItem.HEADER_CELL -> if (!BuildVars.PM_BUILD) (parentActivity as? LaunchActivity)?.checkAppUpdate(true)
+            PreferenceItem.HEADER_CELL -> presentFragment(IcegramPreferencesActivity())
+            PreferenceItem.ICEGRAM_CATEGORY -> presentFragment(IcegramPreferencesActivity())
             PreferenceItem.GENERAL_CATEGORY -> presentFragment(GeneralPreferencesActivity())
             PreferenceItem.APPEARANCE_CATEGORY -> presentFragment(AppearancePreferencesActivity())
             PreferenceItem.CHATS_CATEGORY -> presentFragment(ChatsPreferencesActivity())
@@ -125,6 +127,7 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
             PreferenceItem.CHANNEL -> messagesController.openByUserName(CHANNEL_USERNAME, this, 1)
             PreferenceItem.FORUM -> messagesController.openByUserName(FORUM_USERNAME, this, 1)
             PreferenceItem.COMMUNITY -> {
+                requestCommunity()
                 val community = findCommunity()
                 if (community != null) {
                     showDialog(CommunitySheet(this, community.id))

@@ -60,13 +60,13 @@ public class HeaderSettingsCell extends LinearLayout implements CustomPreference
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER);
 
-        Drawable arrow = ContextCompat.getDrawable(context, R.drawable.ic_foreground).mutate();
+        Drawable arrow = ContextCompat.getDrawable(context, R.drawable.ic_icegram_foreground).mutate();
         Theme.ThemeInfo theme = Theme.getActiveTheme();
-        int color = ContextCompat.getColor(context, R.color.ic_background);
+        int color = ContextCompat.getColor(context, R.color.icegram_icon_background);
 
         if (theme.isMonet() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             color = MonetUtils.getColor(theme.isDark() ? "a2_800" : "a1_100");
-            arrow = ContextCompat.getDrawable(context, R.drawable.ic_foreground_solid).mutate();
+            arrow = ContextCompat.getDrawable(context, R.drawable.ic_icegram_monochrome).mutate();
             arrow.setColorFilter(new PorterDuffColorFilter(MonetUtils.getColor(theme.isDark() ? "a1_200" : "a1_700"), PorterDuff.Mode.MULTIPLY));
         }
 
@@ -111,10 +111,10 @@ public class HeaderSettingsCell extends LinearLayout implements CustomPreference
         if (info != null) {
             sb.append(" (").append(PackageInfoCompat.getLongVersionCode(info)).append(")");
         }
+        sb.append('\n').append(LocaleController.getString(R.string.IcegramAttribution));
         subtitleTextView.setText(sb);
         subtitleTextView.setGravity(Gravity.CENTER);
-        subtitleTextView.setLines(0);
-        subtitleTextView.setMaxLines(0);
+        subtitleTextView.setMaxLines(3);
         subtitleTextView.setSingleLine(false);
         subtitleTextView.setPadding(0, 0, 0, 0);
         addView(subtitleTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER | Gravity.TOP, 60, 2, 60, 28));

@@ -2087,13 +2087,9 @@ public class ImageLoader {
         thumbGeneratingQueue.setPriority(Thread.MIN_PRIORITY);
 
         int memoryClass = ((ActivityManager) ApplicationLoader.applicationContext.getSystemService(Context.ACTIVITY_SERVICE)).getMemoryClass();
-        int maxSize;
-        if (canForce8888 = memoryClass >= 192) {
-            maxSize = 30;
-        } else {
-            maxSize = 15;
-        }
-        int cacheSize = DEBUG_MODE ? 1 : Math.min(maxSize, memoryClass / 7) * 1024 * 1024;
+        canForce8888 = memoryClass >= 192;
+        final boolean compactCache = org.icegram.messenger.IcegramConfig.isCompactCacheEnabled();
+        int cacheSize = DEBUG_MODE ? 1 : org.icegram.messenger.ImageCachePolicy.bitmapCacheBytes(memoryClass, compactCache);
 
         int commonCacheSize =  DEBUG_MODE ? 1 : (int) (cacheSize * 0.8f);
         int smallImagesCacheSize =   DEBUG_MODE ? 1 : (int) (cacheSize * 0.2f);
@@ -2142,14 +2138,14 @@ public class ImageLoader {
                 }
             }
         };
-        wallpaperMemCache = new LruCache<BitmapDrawable>(DEBUG_MODE ? 1 : cacheSize / 4) {
+        wallpaperMemCache = new LruCache<BitmapDrawable>(DEBUG_MODE ? 1 : org.icegram.messenger.ImageCachePolicy.wallpaperCacheBytes(cacheSize, compactCache)) {
             @Override
             protected int sizeOf(String key, BitmapDrawable value) {
                 return sizeOfBitmapDrawable(value);
             }
         };
 
-        lottieMemCache = new LruCache<BitmapDrawable>(DEBUG_MODE ? 1 : 512 * 512 * 2 * 4 * 5) {
+        lottieMemCache = new LruCache<BitmapDrawable>(DEBUG_MODE ? 1 : org.icegram.messenger.ImageCachePolicy.animationCacheBytes(compactCache)) {
 
             @Override
             protected int sizeOf(String key, BitmapDrawable value) {

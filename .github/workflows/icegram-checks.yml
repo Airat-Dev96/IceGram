@@ -1,0 +1,28 @@
+name: icegram checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-policy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Test cache budgets without Android
+        run: sh Tools/icegram/test-policy.sh
+      - name: Validate resources and fork integration
+        run: python3 Tools/icegram/check-source.py

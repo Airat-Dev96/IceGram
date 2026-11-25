@@ -20,7 +20,6 @@ import android.os.Build;
 
 import com.exteragram.messenger.utils.AppUtils;
 
-import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 
@@ -102,15 +101,15 @@ public final class AppIcon {
     }
 
     public int getBackground() {
-        return isDefault() && BuildVars.isBetaApp() ? R.mipmap.ic_launcher_beta_background : background;
+        return background;
     }
 
     public boolean isBackgroundColor() {
-        return backgroundIsColor && !(isDefault() && BuildVars.isBetaApp());
+        return backgroundIsColor;
     }
 
     public int getForeground() {
-        return isDefault() && BuildVars.isBetaApp() ? R.mipmap.ic_launcher_beta_foreground : foreground;
+        return foreground;
     }
 
     public CharSequence getTitle() {

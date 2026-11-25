@@ -143,9 +143,9 @@ Python 3.11 нужен Chaquopy и сборке SDK плагинов. Движо
 
 ```sh
 export BUILD_PYTHON="$(command -v python3.11)"
-sh gradlew :TMessagesProj:generateAppIcons \
+bash gradlew :TMessagesProj:generateAppIcons \
   :TMessagesProj:assembleFullArm64Debug
-sh gradlew :TMessagesProj:generateAppIcons \
+bash gradlew :TMessagesProj:generateAppIcons \
   :TMessagesProj:assembleFullArm64Release
 ```
 

@@ -13,7 +13,7 @@
 - `python3 Tools/icegram/test-apk.py`: тесты проверки содержимого APK на
   искусственных архивах. Это не сборка или проверка настоящего APK.
 - JDK 17, Python 3.11 и toolchain из `ICEGRAM.md`, затем
-  `sh gradlew :TMessagesProj:generateAppIcons :TMessagesProj:assembleFullArm64Debug`:
+  `bash gradlew :TMessagesProj:generateAppIcons :TMessagesProj:assembleFullArm64Debug`:
   Java/Kotlin, ресурсы, manifest merge, JNI и Python SDK плагинов.
   Затем обязательно `assembleFullArm64Release` с R8 и тем же шагом генерации.
 - После сборки CI запускает `python3 Tools/icegram/verify-apk.py --abi arm64`:

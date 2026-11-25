@@ -73,7 +73,7 @@ jobs:
             armv7) variant=FullArmv7Release ;;
             *) exit 1 ;;
           esac
-          sh gradlew \
+          bash gradlew \
             :TMessagesProj:generateAppIcons \
             ":TMessagesProj:assemble${variant}" \
             --no-daemon --max-workers=2 \

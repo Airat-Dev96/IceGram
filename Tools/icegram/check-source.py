@@ -138,6 +138,7 @@ def integration():
     check("LiteArm" not in workflow and "icegram-full-" in workflow, "Stale lite release workflow")
     check("python-version: '3.11'" in workflow and "BUILD_PYTHON=" in workflow, "Full build needs explicit Python 3.11")
     check(":TMessagesProj:generateAppIcons" in workflow, "Build must regenerate launcher assets")
+    check("bash gradlew" in workflow, "Upstream Gradle wrapper requires Bash, not POSIX sh")
     check('buildConfigField "boolean", "EXTERA_HOOK_EMBEDDED", "true"' in gradle
           and 'fullImplementation("com.exteragram.hook:hook-core:' in gradle, "Full plugin/hook support removed")
     check("java.exclude 'org/telegram/messenger/GoogleMapsProvider.java'" in gradle, "GoogleMapsProvider must not compile")

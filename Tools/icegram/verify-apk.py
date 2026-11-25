@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import struct
 import subprocess
 import zipfile
 
@@ -14,8 +15,20 @@ PACKAGE = "org.icegram.messenger"
 ARCHITECTURES = {"arm64": ("arm64-v8a", 2, 183), "armv7": ("armeabi-v7a", 1, 40)}
 REQUIRED_LIBRARIES = {
     "libtmessages.49.so", "libtwidget.so", "libpython3.11.so",
-    "libexterahook.so", "liblsplant.so", "libshadowhook.so",
+    "libc++_shared.so", "libshadowhook.so",
     "libextera_analyzer_loader.so", "libextera_analyzer.so",
+}
+EMBEDDED_HOOK_FUNCTIONS = {
+    "ExteraHookJniOnLoad", "ExteraHookJniOnUnload",
+    "_ZN7lsplant2v24InitEP7_JNIEnvRKNS0_8InitInfoE",
+    "_ZN7lsplant2v24HookEP7_JNIEnvP8_jobjectS4_S4_",
+    "_ZN7lsplant2v26UnHookEP7_JNIEnvP8_jobject",
+    "_ZN7lsplant2v28IsHookedEP7_JNIEnvP8_jobject",
+    "_ZN7lsplant2v210DeoptimizeEP7_JNIEnvP8_jobject",
+    "_ZN7lsplant2v220MakeClassInheritableEP7_JNIEnvP7_jclass",
+    "_ZN7lsplant2v214CollectJitCodeEv",
+    "_ZN7lsplant2v218RedirectToOriginalEP7_JNIEnvP8_jobjectS4_S4_",
+    "_ZN7lsplant2v28RetargetEP7_JNIEnvP8_jobjectS4_",
 }
 
 
@@ -28,6 +41,102 @@ def command(arguments):
     result = subprocess.run(arguments, capture_output=True, check=False)
     require(result.returncode == 0, Path(arguments[0]).name + " failed; output hidden")
     return result.stdout
+
+
+def elf_sections(data):
+    """Read little-endian ELF section tables, for both supported Android ABIs."""
+    require(len(data) >= 64 and data[:4] == b"\x7fELF" and data[5] == 1,
+            "Invalid ELF section input")
+    bits = data[4]
+    require(bits in (1, 2), "Unsupported ELF class")
+    offset = struct.unpack_from("<I" if bits == 1 else "<Q", data, 32 if bits == 1 else 40)[0]
+    size, count, names_index = struct.unpack_from("<HHH", data, 46 if bits == 1 else 58)
+    fmt = "<IIIIIIIIII" if bits == 1 else "<IIQQQQIIQQ"
+    require(size == struct.calcsize(fmt) and count > 0 and names_index < count
+            and offset + size * count <= len(data), "Invalid ELF section table")
+    sections = [struct.unpack_from(fmt, data, offset + i * size) for i in range(count)]
+
+    def section_bytes(section):
+        start, length = section[4:6]
+        require(start + length <= len(data), "ELF section outside file")
+        return data[start:start + length]
+
+    names = section_bytes(sections[names_index])
+    result = {}
+    for index, section in enumerate(sections):
+        start = section[0]
+        end = names.find(b"\0", start)
+        require(start < len(names) and end >= start, "Invalid ELF section name")
+        name = names[start:end].decode("ascii")
+        if name:
+            require(name not in result, "Duplicate ELF section name")
+            result[name] = (index, section, b"" if section[1] == 8 else section_bytes(section))
+    return bits, sections, result
+
+
+def check_embedded_hook_binary(packaged, unstripped):
+    bits, sections, original = elf_sections(unstripped)
+    apk_bits, _, actual = elf_sections(packaged)
+    require(bits == apk_bits, "Embedded hook ELF class mismatch")
+    require(".symtab" in original and ".text" in original and ".rodata" in original,
+            "Unstripped embedded hook symbol/code sections missing")
+    # Stripping may remove symbols/debug info, but must not change executable or read-only data.
+    hashes = {}
+    for name, (_, header, content) in original.items():
+        if header[2] & 2 and header[1] != 8:  # SHF_ALLOC, excluding SHT_NOBITS (.bss)
+            require(name in actual and content == actual[name][2]
+                    and all(header[index] == actual[name][1][index] for index in (1, 2, 3, 5)),
+                    "Packaged embedded hook differs from checked native build: " + name)
+            hashes[name] = hashlib.sha256(content).hexdigest()
+    sym_header, symbols = original[".symtab"][1:]
+    link = sym_header[6]
+    require(link < len(sections) and sections[link][1] == 3, "Invalid ELF symbol string table")
+    start, length = sections[link][4:6]
+    require(start + length <= len(unstripped), "ELF symbol strings outside file")
+    strings = unstripped[start:start + length]
+    size = 16 if bits == 1 else 24
+    require(sym_header[9] == size and len(symbols) % size == 0, "Invalid ELF symbol table")
+    functions = set()
+    for position in range(0, len(symbols), size):
+        if bits == 1:
+            name, value, length, info, _, section = struct.unpack_from("<IIIBBH", symbols, position)
+        else:
+            name, info, _, section, value, length = struct.unpack_from("<IBBHQQ", symbols, position)
+        if info & 15 != 2 or not length or not (0 < section < len(sections)):
+            continue
+        code = sections[section]
+        # A defined function must occupy real, allocated executable bytes.
+        # ARM32 Thumb symbols have bit zero set in st_value.
+        address = value & ~1 if bits == 1 else value
+        if code[1] == 8 or code[2] & 6 != 6 or not (
+                code[3] <= address and address + length <= code[3] + code[5]):
+            continue
+        end = strings.find(b"\0", name)
+        require(name < len(strings) and end >= name, "Invalid ELF function name")
+        functions.add(strings[name:end].decode("ascii"))
+    missing = EMBEDDED_HOOK_FUNCTIONS - functions
+    require(not missing, "Missing statically linked hook functions: " + ", ".join(sorted(missing)))
+    require(bool(original[".text"][2]) and bool(original[".rodata"][2]), "Empty native code/data")
+    return {"functions_verified": sorted(EMBEDDED_HOOK_FUNCTIONS), "allocated_section_sha256": hashes}
+
+
+def check_embedded_hooks(path, architecture, native_dirs):
+    abi = ARCHITECTURES[architecture][0]
+    with zipfile.ZipFile(path) as apk:
+        packaged = apk.read(f"lib/{abi}/libtmessages.49.so")
+    candidates = sorted({candidate for directory in native_dirs if directory.exists()
+                         for candidate in directory.rglob("libtmessages.49.so")
+                         if candidate.parent.name == abi})
+    errors = []
+    for candidate in candidates:
+        try:
+            report = check_embedded_hook_binary(packaged, candidate.read_bytes())
+            report["layout"] = "exteraHook and LSPlant statically linked into libtmessages.49.so"
+            return report
+        except ValueError as error:
+            errors.append(str(error))
+    raise ValueError("No matching verified unstripped hook binary (" + str(len(candidates))
+                     + " candidates): " + ("; ".join(sorted(set(errors))) or "native build outputs absent"))
 
 
 def check_contents(path, architecture):
@@ -43,8 +152,8 @@ def check_contents(path, architecture):
                 "Private build input accidentally packaged")
         libraries = [name for name in names if name.startswith("lib/") and name.endswith(".so")]
         require({name.split("/")[1] for name in libraries} == {abi}, "Wrong or extra native ABI")
-        require(REQUIRED_LIBRARIES <= {Path(name).name for name in libraries},
-                "Missing full/plugin native libraries")
+        missing = REQUIRED_LIBRARIES - {Path(name).name for name in libraries}
+        require(not missing, "Missing full/plugin native libraries: " + ", ".join(sorted(missing)))
         for name in libraries:
             with apk.open(name) as library:
                 header = library.read(20)
@@ -85,6 +194,8 @@ def main():
     parser.add_argument("--apk", type=Path)
     parser.add_argument("--certificate", type=Path, help="Expected signing certificate in DER format")
     parser.add_argument("--build-tools", type=Path)
+    parser.add_argument("--native-build-dir", type=Path, action="append",
+                        help="Native build outputs with unstripped embedded hook symbols")
     parser.add_argument("--report", type=Path, default=ROOT / "ICEGRAM_APK_VERIFICATION.json")
     args = parser.parse_args()
     if args.apk is None:
@@ -96,6 +207,9 @@ def main():
         require(bool(sdk), "Set ANDROID_HOME or --build-tools")
         args.build_tools = Path(sdk) / "build-tools/36.0.0"
     report = check_contents(args.apk, args.abi)
+    report["embedded_hooks"] = check_embedded_hooks(args.apk, args.abi, args.native_build_dir or [
+        ROOT / "TMessagesProj/.cxx", ROOT / "TMessagesProj/build/intermediates/cxx",
+    ])
     badging = command([str(args.build_tools / "aapt"), "dump", "badging", str(args.apk)]).decode()
     require(re.search(r"^package: name='" + re.escape(PACKAGE) + r"'", badging, re.M),
             "Wrong application ID")

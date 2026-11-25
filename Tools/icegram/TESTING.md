@@ -23,8 +23,15 @@
 - После сборки CI запускает `python3 Tools/icegram/verify-apk.py --abi arm64`:
   проверяет настоящую APK-подпись через `apksigner`, совпадение сертификата с
   постоянным ключом, пакет, имя, launcher alias, единственную ABI, ELF-заголовки,
-  библиотеки Python/hooking и Python 3.11 bytecode SDK. Проверяет отсутствие
-  Maps metadata и исходных Maps class descriptors; одна эта проверка DEX
+  библиотеки Python/hooking и Python 3.11 bytecode SDK.
+  Для embedded hooking проверяет 11 определённых функций exteraHook/LSPlant
+  в unstripped `libtmessages.49.so` и побайтовое совпадение всех file-backed
+  SHF_ALLOC-секций этой библиотеки с упакованной APK (включая `.text/.rodata`),
+  их адресов, размеров и флагов. Функции должны занимать реальные байты кода.
+  Отдельные `libexterahook.so/liblsplant.so` upstream не выпускает: его AAR
+  содержат статические `.a`. Отсутствие native build output, функции или
+  подмена кода/данных отклоняются; символы не добавляются в release APK.
+  Проверяет отсутствие Maps metadata и исходных Maps class descriptors; эта проверка DEX
   не исключает обфусцированные классы и не заменяет проверку зависимостей.
    У Wallet 19.2.1 есть неиспользуемый API карт лояльности со ссылкой на
    Maps `LatLng`: buildSrc до R8 удаляет только legacy Binder callbacks
@@ -39,6 +46,10 @@
   отметкой, что runtime-тесты ещё не выполнены. Значения API/подписи не выводятся.
   Локально можно передать `--apk`, `--build-tools` и публичный DER-сертификат
   через `--certificate`, не передавая пароли в командной строке.
+  Unstripped-библиотека ищется в `TMessagesProj/.cxx` и
+  `TMessagesProj/build/intermediates/cxx`; другой каталог можно указать
+  через `--native-build-dir`. Без соответствующего native output проверка
+  не подтверждает embedded hooking и завершается ошибкой.
 
 ### Диагностика R8 без полной сборки
 

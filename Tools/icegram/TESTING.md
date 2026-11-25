@@ -24,6 +24,10 @@
   проверяет настоящую APK-подпись через `apksigner`, совпадение сертификата с
   постоянным ключом, пакет, имя, launcher alias, единственную ABI, ELF-заголовки,
   библиотеки Python/hooking и Python 3.11 bytecode SDK.
+  Launcher alias проверяется по `aapt dump xmltree` скомпилированного manifest:
+  точное имя, enabled/exported, существующая включённая целевая activity и
+  единственный фильтр MAIN/LAUNCHER. Legacy `aapt dump badging` не учитывает
+  `<activity-alias>`, поэтому его вывод не используется для этой проверки.
   Для embedded hooking проверяет 11 определённых функций exteraHook/LSPlant
   в unstripped `libtmessages.49.so` и побайтовое совпадение всех file-backed
   SHF_ALLOC-секций этой библиотеки с упакованной APK (включая `.text/.rodata`),

@@ -55,6 +55,61 @@ class ContentsTest(unittest.TestCase):
                         VERIFY["check_contents"](path, "arm64")
 
 
+class LauncherManifestTest(unittest.TestCase):
+    # aapt dump xmltree text format. Not a compiled manifest/runtime fixture.
+    TREE = '''N: android=http://schemas.android.com/apk/res/android
+  E: manifest (line=1)
+    A: package="org.icegram.messenger" (Raw: "org.icegram.messenger")
+    E: application (line=2)
+      E: activity (line=3)
+        A: android:name(0x01010003)="org.telegram.ui.LaunchActivity" (Raw: "org.telegram.ui.LaunchActivity")
+      E: activity-alias (line=4)
+        A: android:name(0x01010003)="org.icegram.messenger.DefaultIcon" (Raw: "org.icegram.messenger.DefaultIcon")
+        A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+        A: android:exported(0x01010010)=(type 0x12)0xffffffff
+        A: android:targetActivity(0x01010202)="org.telegram.ui.LaunchActivity" (Raw: "org.telegram.ui.LaunchActivity")
+        E: intent-filter (line=5)
+          E: action (line=6)
+            A: android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
+          E: category (line=7)
+            A: android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
+'''
+
+    def test_enabled_alias_and_target(self):
+        result = VERIFY["check_launcher_manifest"](self.TREE)
+        self.assertEqual(result["alias"], "org.icegram.messenger.DefaultIcon")
+        self.assertTrue(result["main_launcher_filter"])
+        VERIFY["check_launcher_manifest"](self.TREE.replace("0xffffffff", "0x1"))
+
+    def test_invalid_launchers_rejected(self):
+        cases = [
+            self.TREE.replace("org.icegram.messenger.DefaultIcon", "org.other.DefaultIcon"),
+            self.TREE.replace("android:enabled(0x0101000e)=(type 0x12)0xffffffff",
+                              "android:enabled(0x0101000e)=(type 0x12)0x0"),
+            self.TREE.replace("android:exported(0x01010010)=(type 0x12)0xffffffff",
+                              "android:exported(0x01010010)=(type 0x12)0x0"),
+            self.TREE.replace('android:targetActivity(0x01010202)="org.telegram.ui.LaunchActivity"',
+                              'android:targetActivity(0x01010202)="org.other.Activity"'),
+            self.TREE.replace('android:name(0x01010003)="org.telegram.ui.LaunchActivity"',
+                              'android:name(0x01010003)="org.other.Activity"'),
+            self.TREE.replace("android.intent.action.MAIN", "android.intent.action.VIEW"),
+            self.TREE.replace("android.intent.category.LAUNCHER", "android.intent.category.DEFAULT"),
+            self.TREE.replace("          E: category", "        E: intent-filter (line=7)\n          E: category"),
+            self.TREE.replace("      E: activity (line=3)",
+                              "      A: android:enabled(0x0101000e)=(type 0x12)0x0\n      E: activity (line=3)"),
+            self.TREE.replace("      E: activity-alias (line=4)",
+                              "        A: android:enabled(0x0101000e)=(type 0x12)0x0\n      E: activity-alias (line=4)"),
+            self.TREE.replace("(type 0x12)0xffffffff", "@0x7f010001"),
+            "",
+        ]
+        alias = self.TREE[self.TREE.index("      E: activity-alias"):]
+        cases += [self.TREE + alias,
+                  self.TREE + alias.replace("org.icegram.messenger.DefaultIcon", "org.other.Alias")]
+        for index, manifest in enumerate(cases):
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                VERIFY["check_launcher_manifest"](manifest)
+
+
 class EmbeddedHookTest(unittest.TestCase):
     def elf(self, *, bits=2, missing=None, undefined=None, text=b"machine-code",
             rodata=b"registration-tables", symbols=True, function_address=0x1000,

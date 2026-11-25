@@ -188,6 +188,73 @@ def check_contents(path, architecture):
     return {"abi": abi, "native_libraries": len(libraries), "python_sdk": "3.11"}
 
 
+def check_launcher_manifest(manifest):
+    """Check aapt xmltree, not badging (legacy aapt ignores activity-alias)."""
+    roots, stack = [], []
+    for line in manifest.splitlines():
+        element = re.fullmatch(r"( *)E: ([\w-]+)(?: .*)?", line)
+        if element:
+            indent, tag = len(element[1]), element[2]
+            while stack and stack[-1][0] >= indent:
+                stack.pop()
+            node = {"tag": tag, "attrs": {}, "children": []}
+            (stack[-1][1]["children"] if stack else roots).append(node)
+            stack.append((indent, node))
+            continue
+        attribute = re.fullmatch(r" *A: (android:\w+)(?:\(0x[0-9a-fA-F]+\))?=(.*)", line)
+        if attribute and stack:
+            key, value = attribute.groups()
+            require(key not in stack[-1][1]["attrs"], "Duplicate packaged manifest attribute")
+            stack[-1][1]["attrs"][key] = value
+
+    def children(node, tag):
+        return [child for child in node["children"] if child["tag"] == tag]
+
+    def string(node, key):
+        value = node["attrs"].get("android:" + key, "")
+        match = re.fullmatch(r'"([^"\\]*)"(?: \(Raw: "[^"\\]*"\))?', value)
+        return match[1] if match else None
+
+    def enabled(node, key="enabled", default=True):
+        value = node["attrs"].get("android:" + key)
+        if value is None:
+            return default
+        if re.fullmatch(r"\(type 0x12\)0x(?:ffffffff|1)", value):
+            return True
+        if value == "(type 0x12)0x0":
+            return False
+        raise ValueError("Unresolved packaged launcher boolean: " + key)
+
+    require(len(roots) == 1 and roots[0]["tag"] == "manifest", "Invalid packaged manifest tree")
+    applications = children(roots[0], "application")
+    require(len(applications) == 1 and enabled(applications[0]), "Packaged application missing/disabled")
+    app = applications[0]
+    aliases = [node for node in children(app, "activity-alias")
+               if string(node, "name") == PACKAGE + ".DefaultIcon"]
+    require(len(aliases) == 1, "Expected exactly one packaged icegram launcher alias")
+    alias = aliases[0]
+    require(enabled(alias) and enabled(alias, "exported", False), "Launcher alias disabled/not exported")
+    target = "org.telegram.ui.LaunchActivity"
+    require(string(alias, "targetActivity") == target, "Wrong packaged launcher target")
+    targets = [node for node in children(app, "activity") if string(node, "name") == target]
+    require(len(targets) == 1 and enabled(targets[0]), "Launcher target missing/disabled")
+
+    def is_launcher(node):
+        return any(
+            any(string(action, "name") == "android.intent.action.MAIN"
+                for action in children(intent, "action"))
+            and any(string(category, "name") == "android.intent.category.LAUNCHER"
+                    for category in children(intent, "category"))
+            for intent in children(node, "intent-filter"))
+
+    launchers = [node for node in app["children"]
+                 if node["tag"] in ("activity", "activity-alias") and is_launcher(node)]
+    require(len(launchers) == 1 and launchers[0] is alias,
+            "Expected only icegram alias with MAIN/LAUNCHER in one intent filter")
+    return {"alias": PACKAGE + ".DefaultIcon", "target": target,
+            "enabled": True, "exported": True, "main_launcher_filter": True}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--abi", required=True, choices=ARCHITECTURES)
@@ -214,10 +281,10 @@ def main():
     require(re.search(r"^package: name='" + re.escape(PACKAGE) + r"'", badging, re.M),
             "Wrong application ID")
     require("application-label:'icegram'" in badging, "Wrong default application name")
-    require("name='org.icegram.messenger.DefaultIcon'" in badging, "Wrong launcher alias")
     require("application-debuggable" not in badging, "APK is debuggable")
     manifest = command([str(args.build_tools / "aapt"), "dump", "xmltree", str(args.apk),
                         "AndroidManifest.xml"]).decode()
+    report["launcher"] = check_launcher_manifest(manifest)
     require(not any(value in manifest for value in (
         "com.google.android.geo.API_KEY", "com.google.android.maps.v2.API_KEY", "MAPS_RECEIVE")),
         "Maps configuration remains in packaged manifest")

@@ -139,6 +139,12 @@ def integration():
     check("python-version: '3.11'" in workflow and "BUILD_PYTHON=" in workflow, "Full build needs explicit Python 3.11")
     check(":TMessagesProj:generateAppIcons" in workflow, "Build must regenerate launcher assets")
     check("bash gradlew" in workflow, "Upstream Gradle wrapper requires Bash, not POSIX sh")
+    report = text(ROOT / "Tools/icegram/r8-report.init.gradle")
+    check("if (app == null)" in report, "R8 diagnostic script must skip buildSrc/included builds")
+    check("config.incoming.artifactView" in report and
+          "componentFilter { id -> id instanceof ModuleComponentIdentifier }" in report and
+          "resolvedConfiguration" not in report,
+          "R8 diagnostics must filter external components before artifact selection")
     check('buildConfigField "boolean", "EXTERA_HOOK_EMBEDDED", "true"' in gradle
           and 'fullImplementation("com.exteragram.hook:hook-core:' in gradle, "Full plugin/hook support removed")
     check("java.exclude 'org/telegram/messenger/GoogleMapsProvider.java'" in gradle, "GoogleMapsProvider must not compile")

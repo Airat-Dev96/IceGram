@@ -144,6 +144,13 @@ def integration():
     check("java.exclude 'org/telegram/messenger/GoogleMapsProvider.java'" in gradle, "GoogleMapsProvider must not compile")
     check("exclude group: 'com.google.android.gms', module: 'play-services-maps'" in gradle, "Maps SDK must be excluded, including transitively")
     check(not re.search(r"(?:implementation|api)\s*[( ]\s*['\"]com\.google\.android\.gms:play-services-maps:", gradle), "Direct Maps dependency remains")
+    proguard = text(ROOT / "TMessagesProj/proguard-rules.pro")
+    check("-dontwarn com.google.android.gms.maps.model.LatLng" in proguard.splitlines(),
+          "Missing narrow rule for Wallet's optional Maps model")
+    check("-checkdiscard class com.google.android.gms.wallet.zzs" in proguard.splitlines(),
+          "Wallet's Maps-dependent parcel creator must be discarded")
+    check(not re.search(r"^\s*(?:-ignorewarnings\b|-dontwarn\s+com\.google\.android\.gms\.maps\.\*)", proguard, re.M),
+          "Do not hide missing classes with broad Maps warning suppression")
     for path in (ROOT / "API_KEYS.example", ROOT / "Tools/icegram/prepare-ci.py", ROOT / ".github/workflows/icegram-build.yml"):
         check("MAPS_V2_API" not in text(path), f"Unneeded Maps key in {path.relative_to(ROOT)}")
 

@@ -10,7 +10,7 @@ VERIFY = runpy.run_path(str(Path(__file__).with_name("verify-apk.py")))
 
 
 class ContentsTest(unittest.TestCase):
-    def make_apk(self, path, *, missing_library=None, extra_abi=False, maps=False, wrong_python=False):
+    def make_apk(self, path, *, missing_library=None, extra_abi=False, maps_descriptor=None, wrong_python=False):
         header = bytearray(20)
         header[:6] = b"\x7fELF\x02\x01"
         header[16:18] = (3).to_bytes(2, "little")
@@ -22,7 +22,7 @@ class ContentsTest(unittest.TestCase):
         with zipfile.ZipFile(path, "w") as apk:
             apk.writestr("AndroidManifest.xml", b"fixture")
             apk.writestr("resources.arsc", b"fixture")
-            apk.writestr("classes.dex", b"dex\n035\0" + (b"Lcom/google/android/gms/maps/GoogleMap;" if maps else b""))
+            apk.writestr("classes.dex", b"dex\n035\0" + (maps_descriptor or b""))
             apk.writestr("assets/chaquopy/stdlib-common.imy", b"fixture")
             apk.writestr("assets/plugins_pysdk/v.txt", b"1.0")
             apk.writestr("assets/plugins_pysdk/sdk-arm64-v8a.zip", sdk_data.getvalue())
@@ -40,7 +40,10 @@ class ContentsTest(unittest.TestCase):
     def test_reject_incomplete_or_wrong_contents(self):
         cases = (
             {"missing_library": "libexterahook.so"},
-            {"extra_abi": True}, {"maps": True}, {"wrong_python": True},
+            {"extra_abi": True}, {"wrong_python": True},
+            {"maps_descriptor": b"Lcom/google/android/gms/maps/GoogleMap;"},
+            {"maps_descriptor": b"Lcom/google/android/gms/maps/model/LatLng;"},
+            {"maps_descriptor": b"Lorg/telegram/messenger/GoogleMapsProvider;"},
         )
         with tempfile.TemporaryDirectory() as directory:
             for index, options in enumerate(cases):

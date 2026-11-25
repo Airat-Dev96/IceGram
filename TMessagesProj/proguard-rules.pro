@@ -4,6 +4,22 @@
     @com.google.android.gms.common.annotation.KeepName *;
 }
 
+# icegram: Wallet 19.2.1's unused loyalty/pass API refers to the Maps LatLng
+# model. PaymentFormActivity uses PaymentsClient, not wallet objects. Do not
+# restore the Maps SDK or suppress other missing classes. Require every Wallet
+# class that references LatLng in this version to be discarded by shrinking;
+# verify-apk.py separately rejects original Maps descriptors in the final DEX.
+-dontwarn com.google.android.gms.maps.model.LatLng
+-checkdiscard class com.google.android.gms.wallet.GiftCardWalletObject
+-checkdiscard class com.google.android.gms.wallet.GiftCardWalletObject$Builder
+-checkdiscard class com.google.android.gms.wallet.LoyaltyWalletObject
+-checkdiscard class com.google.android.gms.wallet.LoyaltyWalletObject$Builder
+-checkdiscard class com.google.android.gms.wallet.OfferWalletObject
+-checkdiscard class com.google.android.gms.wallet.OfferWalletObject$Builder
+-checkdiscard class com.google.android.gms.wallet.wobs.zzb
+-checkdiscard class com.google.android.gms.wallet.wobs.zzc
+-checkdiscard class com.google.android.gms.wallet.zzs
+
 -keep @interface androidx.annotation.Keep
 -keep @androidx.annotation.Keep class * { *; }
 -keepclasseswithmembers class * { @androidx.annotation.Keep *; }

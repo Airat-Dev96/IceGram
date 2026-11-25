@@ -1,4 +1,5 @@
 name: Build icegram APK
+run-name: ${{ inputs.r8_diagnostics_only && 'R8 rules only (no APK)' || 'Full release APK' }} · ${{ inputs.abi }}
 
 on:
   workflow_dispatch:
@@ -11,6 +12,11 @@ on:
         options:
           - arm64
           - armv7
+      r8_diagnostics_only:
+        description: Export dependency rules only (does not build an APK)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -65,6 +71,7 @@ jobs:
           python3 Tools/icegram/check-source.py
           python3 Tools/icegram/test-apk.py
       - name: Generate icegram icons and build single-ABI full release
+        if: ${{ !inputs.r8_diagnostics_only }}
         env:
           ICEGRAM_ABI: ${{ inputs.abi }}
         run: |
@@ -79,17 +86,20 @@ jobs:
             --no-daemon --max-workers=2 \
             '-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8'
       - name: Verify actual release APK and signing identity
+        if: ${{ !inputs.r8_diagnostics_only }}
         env:
           ICEGRAM_ABI: ${{ inputs.abi }}
           ICEGRAM_STORE_PASSWORD: ${{ secrets.ICEGRAM_STORE_PASSWORD }}
           ICEGRAM_KEY_ALIAS: ${{ secrets.ICEGRAM_KEY_ALIAS }}
         run: python3 Tools/icegram/verify-apk.py --abi "$ICEGRAM_ABI"
       - name: Record corresponding source revision
+        if: ${{ !inputs.r8_diagnostics_only }}
         env:
           SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}
         run: |
           printf 'icegram corresponding source: %s\n' "$SOURCE_URL" > ICEGRAM_BUILD.txt
       - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.r8_diagnostics_only }}
         with:
           name: icegram-full-${{ inputs.abi }}-${{ github.run_number }}
           if-no-files-found: error
@@ -101,3 +111,25 @@ jobs:
             ICEGRAM_BUILD.txt
             ICEGRAM_APK_VERIFICATION.json
             ICEGRAM.md
+      - name: Export external R8 consumer rules
+        if: ${{ always() && !cancelled() }}
+        env:
+          ICEGRAM_ABI: ${{ inputs.abi }}
+        run: |
+          case "$ICEGRAM_ABI" in
+            arm64) report=icegramR8Arm64Report ;;
+            armv7) report=icegramR8Armv7Report ;;
+            *) exit 1 ;;
+          esac
+          bash gradlew --init-script Tools/icegram/r8-report.init.gradle \
+            ":TMessagesProj:${report}" --no-daemon --max-workers=2 \
+            '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8'
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && !cancelled() }}
+        with:
+          name: icegram-r8-rules-${{ github.run_number }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            build/icegram-r8/dependency-rules.json
+            TMessagesProj/build/outputs/mapping/**/configuration.txt

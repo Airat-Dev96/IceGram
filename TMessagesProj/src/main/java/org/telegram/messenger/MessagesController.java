@@ -53,6 +53,7 @@ import androidx.core.util.Consumer;
 
 import com.exteragram.messenger.ExteraConfig;
 import org.icegram.messenger.IcegramConfig;
+import org.icegram.messenger.GhostModeController;
 import com.exteragram.messenger.plugins.hooks.PluginsHooks;
 import com.exteragram.messenger.plugins.PluginsController;
 import com.exteragram.messenger.regdate.RegDateController;
@@ -1260,6 +1261,7 @@ public class MessagesController extends BaseController implements NotificationCe
     public static int PROMO_TYPE_OTHER = 2;
 
     private static class ReadTask {
+        public long ghostReadToken;
         public long dialogId;
         public long replyId;
         public long monoForumPeerId;
@@ -14814,6 +14816,10 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void completeReadTask(ReadTask task) {
+        if (!DialogObject.isEncryptedDialog(task.dialogId)
+                && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+            return;
+        }
         if (task.replyId != 0 && task.monoForumPeerId == 0) {
             TLRPC.TL_messages_readDiscussion req = new TLRPC.TL_messages_readDiscussion();
             req.msg_id = (int) task.replyId;
@@ -14862,6 +14868,25 @@ public class MessagesController extends BaseController implements NotificationCe
                 getConnectionsManager().sendRequest(req, (response, error) -> {
 
                 });
+            }
+        }
+    }
+
+    public void discardStaleGhostReadTasks() {
+        for (int index = readTasks.size() - 1; index >= 0; index--) {
+            ReadTask task = readTasks.get(index);
+            if (!DialogObject.isEncryptedDialog(task.dialogId)
+                    && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+                readTasks.remove(index);
+                readTasksMap.remove(task.dialogId);
+            }
+        }
+        for (int index = repliesReadTasks.size() - 1; index >= 0; index--) {
+            ReadTask task = repliesReadTasks.get(index);
+            if (!DialogObject.isEncryptedDialog(task.dialogId)
+                    && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+                repliesReadTasks.remove(index);
+                threadsReadTasksMap.remove(task.dialogId + "_" + task.replyId);
             }
         }
     }
@@ -14930,6 +14955,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
+        final long ghostReadToken = GhostModeController.captureReadReceiptToken();
         boolean createReadTask;
 
         if (threadId != 0) {
@@ -15053,6 +15079,10 @@ public class MessagesController extends BaseController implements NotificationCe
 
         if (createReadTask) {
             Utilities.stageQueue.postRunnable(() -> {
+                if (!DialogObject.isEncryptedDialog(dialogId)
+                        && !GhostModeController.isReadReceiptTokenValid(ghostReadToken)) {
+                    return;
+                }
                 ReadTask currentReadTask;
                 if (threadId != 0) {
                     currentReadTask = threadsReadTasksMap.get(dialogId + "_" + threadId);
@@ -15075,6 +15105,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                     }
                 }
+                currentReadTask.ghostReadToken = ghostReadToken;
                 currentReadTask.maxDate = maxDate;
                 currentReadTask.maxId = maxPositiveId;
                 if (readNow) {

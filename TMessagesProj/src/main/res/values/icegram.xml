@@ -5,10 +5,10 @@
     <string name="AyugramSettings">AyuGram Settings</string>
     <string name="AyugramPrivacy">Privacy</string>
     <string name="AyugramGhostMode">Ghost Mode</string>
-    <string name="AyugramGhostModeInfo">Choose independently whether to hide online status, typing indicators and cloud-chat read receipts.</string>
+    <string name="AyugramGhostModeInfo">Independently hide online status, typing, cloud read receipts and story views. Sending or interacting can still reveal activity. Secret-chat read receipts are not blocked.</string>
     <string name="IcegramPrivacy">Privacy</string>
     <string name="IcegramHideOnline">Hide online status</string>
-    <string name="IcegramHideOnlineInfo">Keep your account offline while using the app.</string>
+    <string name="IcegramHideOnlineInfo">Do not send online presence updates. Sending messages or using another client can still reveal activity.</string>
     <string name="IcegramHideTyping">Hide typing status</string>
     <string name="IcegramHideTypingInfo">Do not send typing indicators in cloud chats.</string>
     <string name="IcegramHideReadReceipts">Hide read receipts</string>

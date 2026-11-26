@@ -25,6 +25,7 @@ import com.exteragram.messenger.plugins.PluginsController
 import com.exteragram.messenger.plugins.ui.PluginsActivity
 import com.exteragram.messenger.showSaveMessageButton
 import org.icegram.messenger.IcegramConfig
+import org.icegram.messenger.GhostModeController
 import org.telegram.messenger.LiteMode
 import org.telegram.messenger.LocaleController.getString
 import org.telegram.messenger.R
@@ -40,6 +41,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
         HIDE_PHONE, SAVE_BUTTON,
         MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
+        GHOST_QUICK, GHOST_OPTIONS, SILENT_SEND,
         AUTO_PROXY,
         UPSTREAM, PLUGINS;
 
@@ -70,6 +72,12 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
         items.add(UItem.asShadow())
 
         items.add(UItem.asHeader(getString(R.string.IcegramPrivacy)))
+        items.add(uCheck(Item.GHOST_QUICK, getString(R.string.AyugramGhostMode),
+            GhostModeController.isEnabled(), getString(R.string.IcegramGhostQuickInfo)))
+        items.add(uButton(Item.GHOST_OPTIONS, getString(R.string.IcegramGhostOptions),
+            R.drawable.msg_settings, subtext = getString(R.string.AyugramGhostModeInfo)))
+        items.add(uCheck(Item.SILENT_SEND, getString(R.string.IcegramSilentSend),
+            IcegramConfig.isSilentSendEnabled(), getString(R.string.IcegramSilentSendInfo)))
         items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),
             IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
         items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
@@ -133,6 +141,9 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             Item.SAVE_BUTTON.id -> toggleBooleanSettingAndRefresh(item) { showSaveMessageButton = it }
             Item.MESSAGE_HISTORY_ENABLED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setMessageHistoryEnabled(it) }
             Item.MESSAGE_HISTORY.id -> presentFragment(MessageHistoryActivity())
+            Item.GHOST_QUICK.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setEnabled(it) }
+            Item.GHOST_OPTIONS.id -> presentFragment(AyugramPreferencesActivity())
+            Item.SILENT_SEND.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setSilentSendEnabled(it) }
             Item.AUTO_PROXY.id -> presentFragment(AutoProxyPreferencesActivity())
             Item.UPSTREAM.id -> Browser.openUrl(parentActivity, IcegramConfig.UPSTREAM_URL)
             Item.PLUGINS.id -> presentFragment(PluginsActivity())

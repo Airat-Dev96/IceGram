@@ -4,10 +4,10 @@
     <string name="AyugramSettings">Настройки AyuGram</string>
     <string name="AyugramPrivacy">Приватность</string>
     <string name="AyugramGhostMode">Режим призрака</string>
-    <string name="AyugramGhostModeInfo">Можно отдельно скрывать статус «в сети», набор текста и отметки о прочтении в облачных чатах.</string>
+    <string name="AyugramGhostModeInfo">Отдельное скрытие онлайн, набора текста, прочтений облачных сообщений и просмотров историй. Отправка и взаимодействие могут раскрывать активность. Прочтения секретных чатов не блокируются.</string>
     <string name="IcegramPrivacy">Приватность</string>
     <string name="IcegramHideOnline">Скрывать статус «в сети»</string>
-    <string name="IcegramHideOnlineInfo">Оставаться офлайн, пока вы пользуетесь приложением.</string>
+    <string name="IcegramHideOnlineInfo">Не отправлять обновления статуса «в сети». Отправка сообщений и другой клиент всё равно могут раскрывать активность.</string>
     <string name="IcegramHideTyping">Скрывать набор текста</string>
     <string name="IcegramHideTypingInfo">Не отправлять индикатор набора текста в облачных чатах.</string>
     <string name="IcegramHideReadReceipts">Скрывать отметки о прочтении</string>

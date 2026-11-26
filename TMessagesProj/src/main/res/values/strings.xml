@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="IcegramSettings">IceGram Settings</string>
+    <string name="IcegramGhostQuickInfo">Toggle hidden online, typing, cloud read receipts and story views together. Does not change silent sending or local history.</string>
+    <string name="IcegramGhostOptions">Ghost Mode controls</string>
+    <string name="IcegramHideStoryViews">Hide story views</string>
+    <string name="IcegramHideStoryViewsInfo">Do not send story view receipts. Replying or reacting to a story can still reveal your view on the server.</string>
+    <string name="IcegramSilentSend">Send without sound</string>
+    <string name="IcegramSilentSendInfo">Send supported cloud messages, media and forwards silently. This does not hide your online status or affect secret-chat service messages.</string>
     <string name="AppName">icegram</string>
     <string name="AppNameBeta">Telegram Beta</string>
     <string name="LanguageName">English</string>

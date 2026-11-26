@@ -16,6 +16,8 @@ public final class IcegramConfig {
     private static volatile Boolean hideOnline;
     private static volatile Boolean hideTyping;
     private static volatile Boolean hideReadReceipts;
+    private static volatile Boolean hideStoryViews;
+    private static volatile Boolean silentSend;
     private static volatile Boolean messageHistoryEnabled;
 
     private IcegramConfig() {
@@ -114,6 +116,42 @@ public final class IcegramConfig {
     public static void setReadReceiptsHidden(boolean enabled) {
         preferences().edit().putBoolean("icegram_hide_read_receipts", enabled).apply();
         hideReadReceipts = enabled;
+    }
+
+    public static boolean areStoryViewsHidden() {
+        Boolean enabled = hideStoryViews;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = hideStoryViews;
+                if (enabled == null) {
+                    hideStoryViews = enabled = preferences().getBoolean("icegram_hide_story_views", false);
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static void setStoryViewsHidden(boolean enabled) {
+        preferences().edit().putBoolean("icegram_hide_story_views", enabled).apply();
+        hideStoryViews = enabled;
+    }
+
+    public static boolean isSilentSendEnabled() {
+        Boolean enabled = silentSend;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = silentSend;
+                if (enabled == null) {
+                    silentSend = enabled = preferences().getBoolean("icegram_silent_send", false);
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static void setSilentSendEnabled(boolean enabled) {
+        preferences().edit().putBoolean("icegram_silent_send", enabled).apply();
+        silentSend = enabled;
     }
 
     public static void setGhostModeEnabled(boolean enabled) {

@@ -14,7 +14,8 @@ class AyugramPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
         HIDE_ONLINE,
         HIDE_TYPING,
-        HIDE_READ_RECEIPTS
+        HIDE_READ_RECEIPTS,
+        HIDE_STORY_VIEWS
     }
 
     override fun getTitle(): String = getString(R.string.AyugramSettings)
@@ -28,6 +29,8 @@ class AyugramPreferencesActivity : BasePreferencesActivity() {
             IcegramConfig.isTypingHidden(), getString(R.string.IcegramHideTypingInfo)))
         items.add(uCheck(Item.HIDE_READ_RECEIPTS, getString(R.string.IcegramHideReadReceipts),
             IcegramConfig.areReadReceiptsHidden(), getString(R.string.IcegramHideReadReceiptsInfo)))
+        items.add(uCheck(Item.HIDE_STORY_VIEWS, getString(R.string.IcegramHideStoryViews),
+            IcegramConfig.areStoryViewsHidden(), getString(R.string.IcegramHideStoryViewsInfo)))
         items.add(UItem.asShadow())
     }
 
@@ -36,6 +39,7 @@ class AyugramPreferencesActivity : BasePreferencesActivity() {
             Item.HIDE_ONLINE.ordinal + 1 -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setOnlineHidden(it) }
             Item.HIDE_TYPING.ordinal + 1 -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setTypingHidden(it) }
             Item.HIDE_READ_RECEIPTS.ordinal + 1 -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setReadReceiptsHidden(it) }
+            Item.HIDE_STORY_VIEWS.ordinal + 1 -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setStoryViewsHidden(it) }
         }
     }
 }

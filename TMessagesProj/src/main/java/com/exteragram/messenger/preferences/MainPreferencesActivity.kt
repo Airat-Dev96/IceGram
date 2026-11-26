@@ -88,12 +88,12 @@ class MainPreferencesActivity : BasePreferencesActivity(), NotificationCenter.No
         items.add(UItem.asCustomShadow(headerSettingsCell, 198).setId(PreferenceItem.HEADER_CELL.id))
 
         items.add(UItem.asHeader(getString(R.string.Categories)))
-        items.add(uButton(PreferenceItem.ICEGRAM_CATEGORY, getString(R.string.IcegramSettings), R.drawable.msg_settings))
         items.add(uButton(PreferenceItem.GENERAL_CATEGORY, getString(R.string.General), R.drawable.msg_media, linkAlias = "general"))
         items.add(uButton(PreferenceItem.APPEARANCE_CATEGORY, getString(R.string.Appearance), R.drawable.msg_theme, linkAlias = "appearance"))
         items.add(uButton(PreferenceItem.CHATS_CATEGORY, getString(R.string.SearchAllChatsShort), R.drawable.msg_discussion, linkAlias = "chats"))
         items.addIf(PluginsController.isPluginEngineSupported(), uButton(PreferenceItem.PLUGINS_CATEGORY, getString(R.string.Plugins), R.drawable.msg_plugins, linkAlias = "plugins"))
         items.add(uButton(PreferenceItem.OTHER_CATEGORY, getString(R.string.LocalOther), R.drawable.msg_fave, linkAlias = "other"))
+        items.add(uButton(PreferenceItem.ICEGRAM_CATEGORY, getString(R.string.IcegramSettings), R.drawable.msg_settings))
         items.add(UItem.asShadow())
 
         items.add(UItem.asHeader(getString(R.string.Links)))

@@ -8,6 +8,13 @@
     <string name="AyugramPrivacy">Privacy</string>
     <string name="AyugramGhostMode">Ghost Mode</string>
     <string name="AyugramGhostModeInfo">Hide cloud-chat read receipts and typing indicators, and keep your account offline while enabled. Messages still become read locally; suppressed receipts are not replayed later.</string>
+    <string name="IcegramPrivacy">Privacy</string>
+    <string name="IcegramHideOnline">Hide online status</string>
+    <string name="IcegramHideOnlineInfo">Keep your account offline while using the app.</string>
+    <string name="IcegramHideTyping">Hide typing status</string>
+    <string name="IcegramHideTypingInfo">Do not send typing indicators in cloud chats.</string>
+    <string name="IcegramHideReadReceipts">Hide read receipts</string>
+    <string name="IcegramHideReadReceiptsInfo">Read messages locally without sending cloud-chat read receipts. Suppressed receipts are not sent later.</string>
     <string name="AyugramMessageHistoryEnabled">Local message history</string>
     <string name="AyugramMessageHistoryEnabledInfo">Keep previous text and captions before cloud-message edits or deletions. Disabled by default; secret and self-destructing messages are excluded.</string>
     <string name="AyugramMessageHistory">Message history</string>

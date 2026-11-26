@@ -196,10 +196,12 @@ def integration():
           "The existing IceGram settings category is missing from the ExteraGram settings page")
     check("AYUGRAM_CATEGORY" not in main_settings,
           "Ayugram preferences must stay separate from the IceGram category")
-    check("GhostModeController.setEnabled(it)" in settings and
+    check("GhostModeController.setOnlineHidden(it)" in settings and
+          "GhostModeController.setTypingHidden(it)" in settings and
+          "GhostModeController.setReadReceiptsHidden(it)" in settings and
           "IcegramConfig.setMessageHistoryEnabled(it)" in settings and
           "MessageHistoryActivity()" in settings,
-          "Ghost Mode and message history must be available in the IceGram settings page")
+          "Separate privacy toggles and message history must be available in the IceGram settings page")
     ayugram_settings = text(java / "com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt")
     check("GhostModeController" not in ayugram_settings and "MessageHistoryActivity" not in ayugram_settings,
           "Ayugram settings must not duplicate IceGram privacy controls")
@@ -215,8 +217,8 @@ def integration():
           "Ghost Mode must keep typing cancellations and secret-chat read behavior intact")
     check("GhostModeController.shouldSuppressRequest(object)" in text(java / "org/telegram/tgnet/ConnectionsManager.java"),
           "Ghost Mode request filter is not connected to the network send path")
-    check("!IcegramConfig.isGhostModeEnabled() && !ignoreSetOnline" in text(java / "org/telegram/messenger/MessagesController.java"),
-          "Ghost Mode must prevent online status updates")
+    check("!IcegramConfig.isOnlineHidden() && !ignoreSetOnline" in text(java / "org/telegram/messenger/MessagesController.java"),
+          "The independent online toggle must prevent online status updates")
     check("onGhostModeChanged()" in text(java / "org/telegram/messenger/MessagesController.java"),
           "Ghost Mode must reset the cached presence state when toggled")
     history_config = text(java / "org/icegram/messenger/IcegramConfig.java")

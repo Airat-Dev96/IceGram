@@ -39,7 +39,8 @@ import java.util.ArrayList
 class IcegramPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
-        HIDE_PHONE, SAVE_BUTTON, GHOST_MODE, MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
+        HIDE_PHONE, SAVE_BUTTON, HIDE_ONLINE, HIDE_TYPING, HIDE_READ_RECEIPTS,
+        MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
         UPSTREAM, PLUGINS;
 
         val id: Int = ordinal + 1
@@ -68,9 +69,13 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
             getString(R.string.IcegramSaveButtonInfo)))
         items.add(UItem.asShadow())
 
-        items.add(UItem.asHeader(getString(R.string.AyugramPrivacy)))
-        items.add(uCheck(Item.GHOST_MODE, getString(R.string.AyugramGhostMode),
-            IcegramConfig.isGhostModeEnabled(), getString(R.string.AyugramGhostModeInfo)))
+        items.add(UItem.asHeader(getString(R.string.IcegramPrivacy)))
+        items.add(uCheck(Item.HIDE_ONLINE, getString(R.string.IcegramHideOnline),
+            IcegramConfig.isOnlineHidden(), getString(R.string.IcegramHideOnlineInfo)))
+        items.add(uCheck(Item.HIDE_TYPING, getString(R.string.IcegramHideTyping),
+            IcegramConfig.isTypingHidden(), getString(R.string.IcegramHideTypingInfo)))
+        items.add(uCheck(Item.HIDE_READ_RECEIPTS, getString(R.string.IcegramHideReadReceipts),
+            IcegramConfig.areReadReceiptsHidden(), getString(R.string.IcegramHideReadReceiptsInfo)))
         items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),
             IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
         items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
@@ -127,7 +132,9 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
             Item.DATA.id -> presentFragment(DataSettingsActivity())
             Item.HIDE_PHONE.id -> toggleBooleanSettingAndRefresh(item) { hidePhoneNumber = it }
             Item.SAVE_BUTTON.id -> toggleBooleanSettingAndRefresh(item) { showSaveMessageButton = it }
-            Item.GHOST_MODE.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setEnabled(it) }
+            Item.HIDE_ONLINE.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setOnlineHidden(it) }
+            Item.HIDE_TYPING.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setTypingHidden(it) }
+            Item.HIDE_READ_RECEIPTS.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setReadReceiptsHidden(it) }
             Item.MESSAGE_HISTORY_ENABLED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setMessageHistoryEnabled(it) }
             Item.MESSAGE_HISTORY.id -> presentFragment(MessageHistoryActivity())
             Item.UPSTREAM.id -> Browser.openUrl(parentActivity, IcegramConfig.UPSTREAM_URL)

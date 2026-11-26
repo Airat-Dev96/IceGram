@@ -10,6 +10,9 @@ import org.telegram.messenger.ApplicationLoader;
 public final class IcegramConfig {
     public static final String UPSTREAM_URL = "https://github.com/exteraSquad/exteraGram";
     private static volatile Boolean ghostModeEnabled;
+    private static volatile Boolean hideOnline;
+    private static volatile Boolean hideTyping;
+    private static volatile Boolean hideReadReceipts;
     private static volatile Boolean messageHistoryEnabled;
 
     private IcegramConfig() {
@@ -53,9 +56,69 @@ public final class IcegramConfig {
         return enabled;
     }
 
+    public static boolean isOnlineHidden() {
+        Boolean enabled = hideOnline;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = hideOnline;
+                if (enabled == null) {
+                    enabled = preferences().getBoolean("icegram_hide_online", isGhostModeEnabled());
+                    hideOnline = enabled;
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static boolean isTypingHidden() {
+        Boolean enabled = hideTyping;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = hideTyping;
+                if (enabled == null) {
+                    enabled = preferences().getBoolean("icegram_hide_typing", isGhostModeEnabled());
+                    hideTyping = enabled;
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static boolean areReadReceiptsHidden() {
+        Boolean enabled = hideReadReceipts;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = hideReadReceipts;
+                if (enabled == null) {
+                    enabled = preferences().getBoolean("icegram_hide_read_receipts", isGhostModeEnabled());
+                    hideReadReceipts = enabled;
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static void setOnlineHidden(boolean enabled) {
+        preferences().edit().putBoolean("icegram_hide_online", enabled).apply();
+        hideOnline = enabled;
+    }
+
+    public static void setTypingHidden(boolean enabled) {
+        preferences().edit().putBoolean("icegram_hide_typing", enabled).apply();
+        hideTyping = enabled;
+    }
+
+    public static void setReadReceiptsHidden(boolean enabled) {
+        preferences().edit().putBoolean("icegram_hide_read_receipts", enabled).apply();
+        hideReadReceipts = enabled;
+    }
+
     public static void setGhostModeEnabled(boolean enabled) {
         preferences().edit().putBoolean("ayugram_ghost_mode", enabled).apply();
         ghostModeEnabled = enabled;
+        setOnlineHidden(enabled);
+        setTypingHidden(enabled);
+        setReadReceiptsHidden(enabled);
     }
 
     public static boolean isMessageHistoryEnabled() {

@@ -64,6 +64,7 @@ public final class ProxyController {
     private static final String PINNED_PROXIES = "proxy_pinned";
     private static final String PINNED_PROXIES_ORDER = "proxy_pinned_order";
     private static final String PROXY_NAMES = "proxy_names";
+    private static final String AUTOMATIC_PROXIES = "proxy_automatic";
     private static final int PROXY_SERIALIZATION_VERSION = 5;
 
     private static final ProxyController INSTANCE = new ProxyController();
@@ -72,6 +73,7 @@ public final class ProxyController {
     private final HashSet<String> pinnedProxies = new HashSet<>();
     private final ArrayList<String> pinnedProxyOrder = new ArrayList<>();
     private final HashMap<String, String> proxyNames = new HashMap<>();
+    private final HashSet<String> automaticProxies = new HashSet<>();
     private SharedConfig.ProxyInfo currentProxy;
     private boolean loaded;
 
@@ -138,16 +140,37 @@ public final class ProxyController {
     }
 
     public synchronized SharedConfig.ProxyInfo addProxy(SharedConfig.ProxyInfo proxyInfo) {
+        return addProxy(proxyInfo, false);
+    }
+
+    public synchronized SharedConfig.ProxyInfo addAutomaticProxy(SharedConfig.ProxyInfo proxyInfo) {
+        return addProxy(proxyInfo, true);
+    }
+
+    public synchronized boolean isAutomaticProxy(SharedConfig.ProxyInfo proxyInfo) {
+        ensureLoaded();
+        String proxyKey = getProxyKey(proxyInfo);
+        return !TextUtils.isEmpty(proxyKey) && automaticProxies.contains(proxyKey);
+    }
+
+    private SharedConfig.ProxyInfo addProxy(SharedConfig.ProxyInfo proxyInfo, boolean automatic) {
         ensureLoaded();
         int count = proxyList.size();
         for (int a = 0; a < count; a++) {
             SharedConfig.ProxyInfo info = proxyList.get(a);
             if (proxyInfo.settings.equals(info.settings)) {
+                if (!automatic && automaticProxies.remove(getProxyKey(info))) {
+                    save();
+                }
                 return info;
             }
         }
         proxyList.add(0, proxyInfo);
+        if (automatic) {
+            automaticProxies.add(getProxyKey(proxyInfo));
+        }
         syncProxyList();
+        save();
         saveProxyList();
         return proxyInfo;
     }
@@ -305,6 +328,9 @@ public final class ProxyController {
             proxyNames.put(newProxyKey, name);
             changed = true;
         }
+        if (automaticProxies.remove(oldProxyKey)) {
+            changed = true;
+        }
         int pinnedIndex = pinnedProxyOrder.indexOf(oldProxyKey);
         if (pinnedIndex >= 0) {
             pinnedProxyOrder.remove(pinnedIndex);
@@ -441,6 +467,7 @@ public final class ProxyController {
         boolean changed = proxyNames.remove(proxyKey) != null;
         changed |= pinnedProxies.remove(proxyKey);
         changed |= pinnedProxyOrder.remove(proxyKey);
+        changed |= automaticProxies.remove(proxyKey);
         if (changed) {
             save();
         }
@@ -448,12 +475,13 @@ public final class ProxyController {
 
     public synchronized void clearAll() {
         ensureLoaded();
-        if (pinnedProxies.isEmpty() && pinnedProxyOrder.isEmpty() && proxyNames.isEmpty()) {
+        if (pinnedProxies.isEmpty() && pinnedProxyOrder.isEmpty() && proxyNames.isEmpty() && automaticProxies.isEmpty()) {
             return;
         }
         pinnedProxies.clear();
         pinnedProxyOrder.clear();
         proxyNames.clear();
+        automaticProxies.clear();
         save();
     }
 
@@ -500,6 +528,7 @@ public final class ProxyController {
         pinnedProxies.clear();
         pinnedProxyOrder.clear();
         proxyNames.clear();
+        automaticProxies.clear();
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
         ProxySettings proxySettings = ProxySettings.fromSharedPreferences(preferences);
         boolean hasProxySettings = proxySettings.isValid();
@@ -627,6 +656,14 @@ public final class ProxyController {
                 }
             }
         }
+        java.util.Set<String> automaticKeys = preferences.getStringSet(AUTOMATIC_PROXIES, null);
+        if (automaticKeys != null) {
+            for (String key : automaticKeys) {
+                if (!TextUtils.isEmpty(key)) {
+                    automaticProxies.add(key);
+                }
+            }
+        }
         loaded = true;
         if (migratedLegacyNames) {
             save();
@@ -652,6 +689,11 @@ public final class ProxyController {
                 encodedNames.add(encode(entry.getKey()) + "\t" + encode(entry.getValue()));
             }
             editor.putString(PROXY_NAMES, TextUtils.join("\n", encodedNames));
+        }
+        if (automaticProxies.isEmpty()) {
+            editor.remove(AUTOMATIC_PROXIES);
+        } else {
+            editor.putStringSet(AUTOMATIC_PROXIES, new HashSet<>(automaticProxies));
         }
         editor.apply();
     }

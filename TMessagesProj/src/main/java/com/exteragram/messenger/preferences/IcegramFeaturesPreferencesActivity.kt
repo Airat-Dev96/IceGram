@@ -24,7 +24,6 @@ import com.exteragram.messenger.squareFab
 import com.exteragram.messenger.plugins.PluginsController
 import com.exteragram.messenger.plugins.ui.PluginsActivity
 import com.exteragram.messenger.showSaveMessageButton
-import org.icegram.messenger.GhostModeController
 import org.icegram.messenger.IcegramConfig
 import org.telegram.messenger.LiteMode
 import org.telegram.messenger.LocaleController.getString
@@ -36,11 +35,12 @@ import org.telegram.ui.DataSettingsActivity
 import org.telegram.ui.LiteModeSettingsActivity
 import java.util.ArrayList
 
-class IcegramPreferencesActivity : BasePreferencesActivity() {
+class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
-        HIDE_PHONE, SAVE_BUTTON, HIDE_ONLINE, HIDE_TYPING, HIDE_READ_RECEIPTS,
+        HIDE_PHONE, SAVE_BUTTON,
         MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
+        AUTO_PROXY,
         UPSTREAM, PLUGINS;
 
         val id: Int = ordinal + 1
@@ -70,16 +70,15 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
         items.add(UItem.asShadow())
 
         items.add(UItem.asHeader(getString(R.string.IcegramPrivacy)))
-        items.add(uCheck(Item.HIDE_ONLINE, getString(R.string.IcegramHideOnline),
-            IcegramConfig.isOnlineHidden(), getString(R.string.IcegramHideOnlineInfo)))
-        items.add(uCheck(Item.HIDE_TYPING, getString(R.string.IcegramHideTyping),
-            IcegramConfig.isTypingHidden(), getString(R.string.IcegramHideTypingInfo)))
-        items.add(uCheck(Item.HIDE_READ_RECEIPTS, getString(R.string.IcegramHideReadReceipts),
-            IcegramConfig.areReadReceiptsHidden(), getString(R.string.IcegramHideReadReceiptsInfo)))
         items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),
             IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
         items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
             subtext = getString(R.string.AyugramMessageHistoryInfo)))
+        items.add(UItem.asShadow())
+
+        items.add(UItem.asHeader(getString(R.string.IcegramNetwork)))
+        items.add(uButton(Item.AUTO_PROXY, getString(R.string.IcegramAutoProxy), R.drawable.proxy_check,
+            subtext = getString(R.string.IcegramAutoProxyInfo), linkAlias = "autoProxy"))
         items.add(UItem.asShadow())
 
         if (PluginsController.isPluginEngineSupported()) {
@@ -132,11 +131,9 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
             Item.DATA.id -> presentFragment(DataSettingsActivity())
             Item.HIDE_PHONE.id -> toggleBooleanSettingAndRefresh(item) { hidePhoneNumber = it }
             Item.SAVE_BUTTON.id -> toggleBooleanSettingAndRefresh(item) { showSaveMessageButton = it }
-            Item.HIDE_ONLINE.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setOnlineHidden(it) }
-            Item.HIDE_TYPING.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setTypingHidden(it) }
-            Item.HIDE_READ_RECEIPTS.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setReadReceiptsHidden(it) }
             Item.MESSAGE_HISTORY_ENABLED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setMessageHistoryEnabled(it) }
             Item.MESSAGE_HISTORY.id -> presentFragment(MessageHistoryActivity())
+            Item.AUTO_PROXY.id -> presentFragment(AutoProxyPreferencesActivity())
             Item.UPSTREAM.id -> Browser.openUrl(parentActivity, IcegramConfig.UPSTREAM_URL)
             Item.PLUGINS.id -> presentFragment(PluginsActivity())
         }

@@ -9,6 +9,9 @@ import org.telegram.messenger.ApplicationLoader;
 /** No services, timers, network access or per-frame preference reads. */
 public final class IcegramConfig {
     public static final String UPSTREAM_URL = "https://github.com/exteraSquad/exteraGram";
+    public static final int DEFAULT_AUTO_PROXY_INTERVAL_HOURS = 3;
+    public static final int DEFAULT_AUTO_PROXY_COUNT = 25;
+    public static final int DEFAULT_AUTO_PROXY_MAX_PING = 800;
     private static volatile Boolean ghostModeEnabled;
     private static volatile Boolean hideOnline;
     private static volatile Boolean hideTyping;
@@ -138,5 +141,73 @@ public final class IcegramConfig {
     public static void setMessageHistoryEnabled(boolean enabled) {
         preferences().edit().putBoolean("ayugram_message_history", enabled).apply();
         messageHistoryEnabled = enabled;
+    }
+
+    public static boolean isAutoProxyEnabled() {
+        return preferences().getBoolean("auto_proxy_enabled", false);
+    }
+
+    public static void setAutoProxyEnabled(boolean enabled) {
+        preferences().edit().putBoolean("auto_proxy_enabled", enabled).apply();
+    }
+
+    public static int getAutoProxyIntervalHours() {
+        int value = preferences().getInt("auto_proxy_interval_hours", DEFAULT_AUTO_PROXY_INTERVAL_HOURS);
+        return value == 1 || value == 3 || value == 5 || value == 12 || value == 24
+                ? value : DEFAULT_AUTO_PROXY_INTERVAL_HOURS;
+    }
+
+    public static void setAutoProxyIntervalHours(int hours) {
+        if (hours == 1 || hours == 3 || hours == 5 || hours == 12 || hours == 24) {
+            preferences().edit().putInt("auto_proxy_interval_hours", hours).apply();
+        }
+    }
+
+    public static int getAutoProxyCount() {
+        int value = preferences().getInt("auto_proxy_count", DEFAULT_AUTO_PROXY_COUNT);
+        return value == 10 || value == 25 || value == 50 || value == 100
+                ? value : DEFAULT_AUTO_PROXY_COUNT;
+    }
+
+    public static void setAutoProxyCount(int count) {
+        if (count == 10 || count == 25 || count == 50 || count == 100) {
+            preferences().edit().putInt("auto_proxy_count", count).apply();
+        }
+    }
+
+    public static boolean isAutoProxyRemoveDeadEnabled() {
+        return preferences().getBoolean("auto_proxy_remove_dead", true);
+    }
+
+    public static void setAutoProxyRemoveDeadEnabled(boolean enabled) {
+        preferences().edit().putBoolean("auto_proxy_remove_dead", enabled).apply();
+    }
+
+    public static boolean isAutoProxyAutoSwitchEnabled() {
+        return preferences().getBoolean("auto_proxy_auto_switch", false);
+    }
+
+    public static void setAutoProxyAutoSwitchEnabled(boolean enabled) {
+        preferences().edit().putBoolean("auto_proxy_auto_switch", enabled).apply();
+    }
+
+    public static int getAutoProxyMaxPing() {
+        int value = preferences().getInt("auto_proxy_max_ping", DEFAULT_AUTO_PROXY_MAX_PING);
+        return value == 300 || value == 500 || value == 800 || value == 1200 || value == 2000
+                ? value : DEFAULT_AUTO_PROXY_MAX_PING;
+    }
+
+    public static void setAutoProxyMaxPing(int ping) {
+        if (ping == 300 || ping == 500 || ping == 800 || ping == 1200 || ping == 2000) {
+            preferences().edit().putInt("auto_proxy_max_ping", ping).apply();
+        }
+    }
+
+    public static boolean isHideProxySponsorEnabled() {
+        return preferences().getBoolean("hide_proxy_sponsor", true);
+    }
+
+    public static void setHideProxySponsorEnabled(boolean enabled) {
+        preferences().edit().putBoolean("hide_proxy_sponsor", enabled).apply();
     }
 }

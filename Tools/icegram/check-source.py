@@ -80,7 +80,9 @@ def resources():
 
     # Verify references in the newly added Android sources against real resources.
     additions = list((MAIN / "java/org/icegram/messenger").glob("*.java"))
-    additions.extend((MAIN / "java/com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt",
+    additions.extend((MAIN / "java/com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt",
+                      MAIN / "java/com/exteragram/messenger/preferences/MainPreferencesActivity.kt",
+                      MAIN / "java/com/exteragram/messenger/preferences/ExteraGramPreferencesActivity.kt",
                       MAIN / "java/com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt",
                       MAIN / "java/com/exteragram/messenger/preferences/MessageHistoryActivity.kt"))
     for path in additions:
@@ -188,24 +190,34 @@ def integration():
           and "webFile.location instanceof TLRPC.TL_inputWebFileGeoPointLocation" in location, "Map thumbnails are not suppressed")
     for relative in ("org/telegram/ui/LocationActivity.java", "org/telegram/ui/Components/ChatAttachAlert.java"):
         check("IcegramConfig.areMapsEnabled()" in text(java / relative), f"Map entry guard missing: {relative}")
-    settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
+    settings = text(java / "com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt")
     check("PluginsController.isPluginEngineSupported()" in settings and "PluginsActivity()" in settings, "Plugin shortcut removed")
     main_settings = text(java / "com/exteragram/messenger/preferences/MainPreferencesActivity.kt")
-    check("PreferenceItem.ICEGRAM_CATEGORY" in main_settings and
-          "presentFragment(IcegramPreferencesActivity())" in main_settings,
-          "The existing IceGram settings category is missing from the ExteraGram settings page")
-    check("AYUGRAM_CATEGORY" not in main_settings,
-          "Ayugram preferences must stay separate from the IceGram category")
-    check("GhostModeController.setOnlineHidden(it)" in settings and
-          "GhostModeController.setTypingHidden(it)" in settings and
-          "GhostModeController.setReadReceiptsHidden(it)" in settings and
-          "IcegramConfig.setMessageHistoryEnabled(it)" in settings and
+    hub_items = ("EXTERAGRAM,", "AYUGRAM,", "ICEGRAM")
+    hub_routes = ("presentFragment(ExteraGramPreferencesActivity())",
+                  "presentFragment(AyugramPreferencesActivity())",
+                  "presentFragment(IcegramFeaturesPreferencesActivity())")
+    check(all(item in main_settings for item in hub_items) and
+          main_settings.index(hub_items[0]) < main_settings.index(hub_items[1]) < main_settings.index(hub_items[2]) and
+          all(route in main_settings for route in hub_routes),
+          "The main settings hub must show ExteraGram, AyuGram and IceGram sections in order")
+    extera_settings = text(java / "com/exteragram/messenger/preferences/ExteraGramPreferencesActivity.kt")
+    check("PreferenceItem.GENERAL_CATEGORY" in extera_settings and
+          "PreferenceItem.APPEARANCE_CATEGORY" in extera_settings and
+          "PreferenceItem.CHATS_CATEGORY" in extera_settings and
+          "PreferenceItem.AYUGRAM_CATEGORY" not in extera_settings and
+          "PreferenceItem.ICEGRAM_CATEGORY" not in extera_settings,
+          "ExteraGram categories must remain on their own screen")
+    check("IcegramConfig.setMessageHistoryEnabled(it)" in settings and
           "MessageHistoryActivity()" in settings,
-          "Separate privacy toggles and message history must be available in the IceGram settings page")
+          "Message history must remain available in the IceGram settings page")
     ayugram_settings = text(java / "com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt")
-    check("GhostModeController" not in ayugram_settings and "MessageHistoryActivity" not in ayugram_settings,
-          "Ayugram settings must not duplicate IceGram privacy controls")
-    settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
+    check("GhostModeController.setOnlineHidden(it)" in ayugram_settings and
+          "GhostModeController.setTypingHidden(it)" in ayugram_settings and
+          "GhostModeController.setReadReceiptsHidden(it)" in ayugram_settings and
+          "MessageHistoryActivity" not in ayugram_settings,
+          "AyuGram settings must own the separate Ghost Mode controls")
+    settings = text(java / "com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt")
     check("IcegramClassicInterface" in settings and "FLAG_LIQUID_GLASS" in settings,
           "Classic interface action must disable Liquid Glass")
     ghost = text(java / "org/icegram/messenger/GhostModeController.java")

@@ -421,6 +421,7 @@ public class ApplicationLoader extends Application implements Provider {
         AppIconController.fixLauncherIconIfNeeded();
         ProxyRotationController.init();
         ProxyPingController.init();
+        com.exteragram.messenger.proxy.AutoProxyScheduler.sync();
 
         // extera debug
         HeapMonitor.init();

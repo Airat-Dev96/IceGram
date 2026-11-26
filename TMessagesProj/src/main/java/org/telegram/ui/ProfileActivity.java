@@ -160,8 +160,8 @@ import com.exteragram.messenger.plugins.utils.MenuContextBuilder;
 import com.exteragram.messenger.profilecolor.ProfileColorTheme;
 import com.exteragram.messenger.profilecolor.ProfilePhotoFade;
 import com.exteragram.messenger.regdate.RegDateController;
-import com.exteragram.messenger.preferences.MainPreferencesActivity;
-import com.exteragram.messenger.preferences.IcegramPreferencesActivity;
+import com.exteragram.messenger.preferences.ExteraGramPreferencesActivity;
+import com.exteragram.messenger.preferences.IcegramFeaturesPreferencesActivity;
 import com.exteragram.messenger.preferences.AyugramPreferencesActivity;
 import com.exteragram.messenger.preferences.utils.SettingsRegistry;
 import com.exteragram.messenger.utils.AppUtils;
@@ -4824,11 +4824,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 fragment.setInfo(chatInfo);
                 presentFragment(fragment);
             } else if (position == exteraRow) {
-                presentFragment(new MainPreferencesActivity());
+                presentFragment(new ExteraGramPreferencesActivity());
             } else if (position == ayugramRow) {
                 presentFragment(new AyugramPreferencesActivity());
             } else if (position == icegramRow) {
-                presentFragment(new IcegramPreferencesActivity());
+                presentFragment(new IcegramFeaturesPreferencesActivity());
             } else if (position == notificationRow) {
                 presentFragment(new NotificationsSettingsActivity());
             } else if (position == privacyRow) {

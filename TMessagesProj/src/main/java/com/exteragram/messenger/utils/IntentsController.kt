@@ -26,7 +26,7 @@ import com.exteragram.messenger.feed.ui.FeedActivity
 import com.exteragram.messenger.plugins.PluginsController
 import com.exteragram.messenger.pluginsEngine
 import com.exteragram.messenger.pluginsSafeMode
-import com.exteragram.messenger.preferences.MainPreferencesActivity
+import com.exteragram.messenger.preferences.ExteraGramPreferencesActivity
 import com.exteragram.messenger.preferences.OtherPreferencesActivity
 import com.exteragram.messenger.preferences.utils.SettingsRegistry
 import com.exteragram.messenger.utils.chats.ChatUtils
@@ -59,7 +59,7 @@ object IntentsController {
     private val deeplinkCallbacks: Map<String, (Uri) -> Unit> = mapOf(
         "extera" to {
             AndroidUtilities.runOnUIThread {
-                LaunchActivity.instance.presentFragment(MainPreferencesActivity())
+                LaunchActivity.instance.presentFragment(ExteraGramPreferencesActivity())
             }
         },
         "export" to {

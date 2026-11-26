@@ -22,9 +22,10 @@ import com.exteragram.messenger.feed.ui.FeedChannelsActivity;
 import com.exteragram.messenger.plugins.PluginsController;
 import com.exteragram.messenger.plugins.ui.PluginsInfoActivity;
 import com.exteragram.messenger.pillstack.ui.PillStackPreferencesActivity;
+import com.exteragram.messenger.preferences.AutoProxyPreferencesActivity;
 import com.exteragram.messenger.preferences.BasePreferencesActivity;
 import com.exteragram.messenger.preferences.GeneralPreferencesActivity;
-import com.exteragram.messenger.preferences.MainPreferencesActivity;
+import com.exteragram.messenger.preferences.ExteraGramPreferencesActivity;
 import com.exteragram.messenger.preferences.OtherPreferencesActivity;
 import com.exteragram.messenger.preferences.appearance.AppearancePreferencesActivity;
 import com.exteragram.messenger.preferences.appearance.AppNavigationPreferencesActivity;
@@ -60,7 +61,7 @@ public class SettingsRegistry {
     private final ConcurrentHashMap<String, Entry> entriesStringAlias = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> primaryAliases = new ConcurrentHashMap<>();
     private static final Map<Class<? extends BaseFragment>, Integer> categoriesIcons = Map.ofEntries(
-            Map.entry(MainPreferencesActivity.class, R.drawable.extera_outline),
+            Map.entry(ExteraGramPreferencesActivity.class, R.drawable.extera_outline),
             Map.entry(GeneralPreferencesActivity.class, R.drawable.msg_media),
             Map.entry(AppearancePreferencesActivity.class, R.drawable.msg_theme),
             Map.entry(ChatsPreferencesActivity.class, R.drawable.msg_discussion),
@@ -71,7 +72,8 @@ public class SettingsRegistry {
             Map.entry(PillStackPreferencesActivity.class, R.drawable.outline_header_search),
             Map.entry(FeedChannelsActivity.class, R.drawable.ic_feed),
             Map.entry(SwipeActionsPreferencesActivity.class, R.drawable.menu_reply),
-            Map.entry(InlineResultsPreferencesActivity.class, R.drawable.msg_calculator)
+            Map.entry(InlineResultsPreferencesActivity.class, R.drawable.msg_calculator),
+            Map.entry(AutoProxyPreferencesActivity.class, R.drawable.proxy_check)
     );
 
     public static List<String> newFeatures = List.of(

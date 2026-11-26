@@ -1640,7 +1640,9 @@ public class MessagesController extends BaseController implements NotificationCe
             RemoteUtils.sharedPreferences.registerOnSharedPreferenceChangeListener(hideAdsConfigListener);
         }
         if (promoDialogType == PROMO_TYPE_PROXY && RemoteUtils.getBooleanConfigValue(RemoteUtils.HIDE_ADS, false)) {
-            promoDialogId = 0;
+            if (!IcegramConfig.isHideProxySponsorEnabled()) {
+                promoDialogId = 0;
+            }
             proxyDialogAddress = null;
         }
         gifSearchBot = mainPreferences.getString("gifSearchBot", "gif");
@@ -2182,7 +2184,7 @@ public class MessagesController extends BaseController implements NotificationCe
             for (int a = 0; a < pinnedDialogs.dialogs.size(); a++) {
                 TLRPC.Dialog d = pinnedDialogs.dialogs.get(a);
                 DialogObject.initDialog(d);
-                if (d.id == 0) {
+                if (d.id == 0 || isHiddenProxySponsorDialog(d.id)) {
                     continue;
                 }
                 if (DialogObject.isEncryptedDialog(d.id) && enc_chats_dict != null) {
@@ -11005,6 +11007,9 @@ public class MessagesController extends BaseController implements NotificationCe
     private long lastCheckPromoInfoTime;
 
     private void checkPromoInfoInternal(boolean reset) {
+        if (IcegramConfig.isHideProxySponsorEnabled() && promoDialogType == PROMO_TYPE_PROXY && promoDialog != null) {
+            AndroidUtilities.runOnUIThread(this::removePromoDialog);
+        }
         if (reset && checkingPromoInfo) {
             checkingPromoInfo = false;
         }
@@ -11033,6 +11038,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 return;
             }
             boolean noDialog = false;
+            boolean hiddenProxySponsor = IcegramConfig.isHideProxySponsorEnabled() && promoDialogType == PROMO_TYPE_PROXY;
             if (response instanceof TLRPC.TL_help_promoDataEmpty) {
                 TLRPC.TL_help_promoDataEmpty res = (TLRPC.TL_help_promoDataEmpty) response;
                 nextPromoInfoCheckTime = res.expires;
@@ -11040,7 +11046,8 @@ public class MessagesController extends BaseController implements NotificationCe
             } else if (response instanceof TLRPC.TL_help_promoData) {
                 TLRPC.TL_help_promoData res = (TLRPC.TL_help_promoData) response;
 
-                if (res.proxy && RemoteUtils.getBooleanConfigValue(RemoteUtils.HIDE_ADS, false)) {
+                hiddenProxySponsor = res.proxy && IcegramConfig.isHideProxySponsorEnabled();
+                if (res.proxy && (hiddenProxySponsor || RemoteUtils.getBooleanConfigValue(RemoteUtils.HIDE_ADS, false))) {
                     noDialog = true;
                 }
 
@@ -11101,18 +11108,20 @@ public class MessagesController extends BaseController implements NotificationCe
                 editor.putInt("nextPromoInfoCheckTime", nextPromoInfoCheckTime);
                 editor.apply();
 
-                AndroidUtilities.runOnUIThread(() -> {
-                    lastCheckPromoInfoTime = getConnectionsManager().getCurrentTime();
-                    pendingSuggestions = new HashSet<>(res.pending_suggestions);
-                    dismissedSuggestions = new HashSet<>(res.dismissed_suggestions);
-                    customPendingSuggestion = res.custom_pending_suggestion;
-                    getNotificationCenter().postNotificationName(NotificationCenter.newSuggestionsAvailable);
+                if (!hiddenProxySponsor) {
+                    AndroidUtilities.runOnUIThread(() -> {
+                        lastCheckPromoInfoTime = getConnectionsManager().getCurrentTime();
+                        pendingSuggestions = new HashSet<>(res.pending_suggestions);
+                        dismissedSuggestions = new HashSet<>(res.dismissed_suggestions);
+                        customPendingSuggestion = res.custom_pending_suggestion;
+                        getNotificationCenter().postNotificationName(NotificationCenter.newSuggestionsAvailable);
 
-                    SharedPreferences.Editor editor1 = mainPreferences.edit();
-                    editor1.putStringSet("pendingSuggestions", pendingSuggestions);
-                    editor1.putStringSet("dismissedSuggestions", dismissedSuggestions);
-                    editor1.commit();
-                });
+                        SharedPreferences.Editor editor1 = mainPreferences.edit();
+                        editor1.putStringSet("pendingSuggestions", pendingSuggestions);
+                        editor1.putStringSet("dismissedSuggestions", dismissedSuggestions);
+                        editor1.commit();
+                    });
+                }
 
                 if (!noDialog) {
                     AndroidUtilities.runOnUIThread(() -> {
@@ -11282,8 +11291,13 @@ public class MessagesController extends BaseController implements NotificationCe
                 noDialog = true;
             }
             if (noDialog) {
-                promoDialogId = 0;
-                getGlobalMainSettings().edit().putLong("proxy_dialog", promoDialogId).remove("proxyDialogAddress").putInt("nextPromoInfoCheckTime", nextPromoInfoCheckTime).apply();
+                if (!hiddenProxySponsor) {
+                    promoDialogId = 0;
+                    proxyDialogAddress = null;
+                    getGlobalMainSettings().edit().putLong("proxy_dialog", promoDialogId).remove("proxyDialogAddress").putInt("nextPromoInfoCheckTime", nextPromoInfoCheckTime).apply();
+                } else {
+                    getGlobalMainSettings().edit().putLong("proxy_dialog", promoDialogId).putString("proxyDialogAddress", proxyDialogAddress).putInt("nextPromoInfoCheckTime", nextPromoInfoCheckTime).apply();
+                }
                 checkingPromoInfoRequestId = 0;
                 checkingPromoInfo = false;
                 AndroidUtilities.runOnUIThread(this::removePromoDialog);
@@ -11323,7 +11337,15 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isPromoDialog(long did, boolean checkLeft) {
-        return promoDialog != null && promoDialog.id == did && (!checkLeft || isLeftPromoChannel);
+        return !(IcegramConfig.isHideProxySponsorEnabled() && promoDialogType == PROMO_TYPE_PROXY)
+                && promoDialog != null && promoDialog.id == did && (!checkLeft || isLeftPromoChannel);
+    }
+
+    private boolean isHiddenProxySponsorDialog(long dialogId) {
+        return IcegramConfig.isHideProxySponsorEnabled()
+                && promoDialogType == PROMO_TYPE_PROXY
+                && promoDialogId != 0
+                && promoDialogId == dialogId;
     }
 
     private String getUserNameForTyping(TLRPC.User user) {
@@ -13100,7 +13122,7 @@ public class MessagesController extends BaseController implements NotificationCe
             for (int a = 0; a < resetDialogsAll.dialogs.size(); a++) {
                 TLRPC.Dialog d = resetDialogsAll.dialogs.get(a);
                 DialogObject.initDialog(d);
-                if (d.id == 0) {
+                if (d.id == 0 || isHiddenProxySponsorDialog(d.id)) {
                     continue;
                 }
                 if (d.last_message_date == 0) {
@@ -13637,7 +13659,7 @@ public class MessagesController extends BaseController implements NotificationCe
             for (int a = 0; a < dialogsRes.dialogs.size(); a++) {
                 TLRPC.Dialog d = dialogsRes.dialogs.get(a);
                 DialogObject.initDialog(d);
-                if (d.id == 0) {
+                if (d.id == 0 || isHiddenProxySponsorDialog(d.id)) {
                     continue;
                 }
                 if (DialogObject.isEncryptedDialog(d.id) && enc_chats_dict != null) {
@@ -14269,6 +14291,9 @@ public class MessagesController extends BaseController implements NotificationCe
             for (int a = 0; a < dialogsRes.dialogs.size(); a++) {
                 TLRPC.Dialog d = dialogsRes.dialogs.get(a);
                 DialogObject.initDialog(d);
+                if (isHiddenProxySponsorDialog(d.id)) {
+                    continue;
+                }
                 if (promoDialogId == 0 || promoDialogId != d.id) {
                     if (DialogObject.isChannel(d)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);

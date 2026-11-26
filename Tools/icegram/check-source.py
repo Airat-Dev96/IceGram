@@ -190,12 +190,19 @@ def integration():
         check("IcegramConfig.areMapsEnabled()" in text(java / relative), f"Map entry guard missing: {relative}")
     settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
     check("PluginsController.isPluginEngineSupported()" in settings and "PluginsActivity()" in settings, "Plugin shortcut removed")
-    profile = text(java / "org/telegram/ui/ProfileActivity.java")
-    for label, activity in (("ExteraGramSettings", "MainPreferencesActivity"),
-                            ("AyugramSettings", "AyugramPreferencesActivity"),
-                            ("IcegramSettings", "IcegramPreferencesActivity")):
-        check(f"R.string.{label}" in profile and f"new {activity}()" in profile,
-              f"Separate {label} entry is missing from the profile settings")
+    main_settings = text(java / "com/exteragram/messenger/preferences/MainPreferencesActivity.kt")
+    check("PreferenceItem.ICEGRAM_CATEGORY" in main_settings and
+          "presentFragment(IcegramPreferencesActivity())" in main_settings,
+          "The existing IceGram settings category is missing from the ExteraGram settings page")
+    check("AYUGRAM_CATEGORY" not in main_settings,
+          "Ayugram preferences must stay separate from the IceGram category")
+    check("GhostModeController.setEnabled(it)" in settings and
+          "IcegramConfig.setMessageHistoryEnabled(it)" in settings and
+          "MessageHistoryActivity()" in settings,
+          "Ghost Mode and message history must be available in the IceGram settings page")
+    ayugram_settings = text(java / "com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt")
+    check("GhostModeController" not in ayugram_settings and "MessageHistoryActivity" not in ayugram_settings,
+          "Ayugram settings must not duplicate IceGram privacy controls")
     settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
     check("IcegramClassicInterface" in settings and "FLAG_LIQUID_GLASS" in settings,
           "Classic interface action must disable Liquid Glass")

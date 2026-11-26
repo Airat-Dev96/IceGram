@@ -24,6 +24,7 @@ import com.exteragram.messenger.squareFab
 import com.exteragram.messenger.plugins.PluginsController
 import com.exteragram.messenger.plugins.ui.PluginsActivity
 import com.exteragram.messenger.showSaveMessageButton
+import org.icegram.messenger.GhostModeController
 import org.icegram.messenger.IcegramConfig
 import org.telegram.messenger.LiteMode
 import org.telegram.messenger.LocaleController.getString
@@ -38,7 +39,8 @@ import java.util.ArrayList
 class IcegramPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
-        HIDE_PHONE, SAVE_BUTTON, UPSTREAM, PLUGINS;
+        HIDE_PHONE, SAVE_BUTTON, GHOST_MODE, MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
+        UPSTREAM, PLUGINS;
 
         val id: Int = ordinal + 1
     }
@@ -64,6 +66,15 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
             getString(R.string.IcegramHidePhoneInfo)))
         items.add(uCheck(Item.SAVE_BUTTON, getString(R.string.IcegramSaveButton), showSaveMessageButton,
             getString(R.string.IcegramSaveButtonInfo)))
+        items.add(UItem.asShadow())
+
+        items.add(UItem.asHeader(getString(R.string.AyugramPrivacy)))
+        items.add(uCheck(Item.GHOST_MODE, getString(R.string.AyugramGhostMode),
+            IcegramConfig.isGhostModeEnabled(), getString(R.string.AyugramGhostModeInfo)))
+        items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),
+            IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
+        items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
+            subtext = getString(R.string.AyugramMessageHistoryInfo)))
         items.add(UItem.asShadow())
 
         if (PluginsController.isPluginEngineSupported()) {
@@ -116,6 +127,9 @@ class IcegramPreferencesActivity : BasePreferencesActivity() {
             Item.DATA.id -> presentFragment(DataSettingsActivity())
             Item.HIDE_PHONE.id -> toggleBooleanSettingAndRefresh(item) { hidePhoneNumber = it }
             Item.SAVE_BUTTON.id -> toggleBooleanSettingAndRefresh(item) { showSaveMessageButton = it }
+            Item.GHOST_MODE.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setEnabled(it) }
+            Item.MESSAGE_HISTORY_ENABLED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setMessageHistoryEnabled(it) }
+            Item.MESSAGE_HISTORY.id -> presentFragment(MessageHistoryActivity())
             Item.UPSTREAM.id -> Browser.openUrl(parentActivity, IcegramConfig.UPSTREAM_URL)
             Item.PLUGINS.id -> presentFragment(PluginsActivity())
         }

@@ -1,9 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="IcegramSettings">icegram · Лёгкость и удобство</string>
+    <string name="IcegramSettings">Настройки IceGram</string>
+    <string name="ExteraGramSettings">Настройки ExteraGram</string>
+    <string name="AyugramSettings">Настройки Ayugram</string>
+    <string name="AyugramSettingsIntro">Функции приватности Ayugram будут добавляться сюда поэтапно.</string>
+    <string name="AyugramPrivacy">Приватность</string>
+    <string name="AyugramGhostMode">Режим призрака</string>
+    <string name="AyugramGhostModeInfo">Скрывает отметки о прочтении в облачных чатах и индикатор набора текста, а также сохраняет аккаунт офлайн. Сообщения по-прежнему отмечаются прочитанными локально; скрытые отметки позже не отправляются.</string>
+    <string name="AyugramMessageHistoryEnabled">Локальная история сообщений</string>
+    <string name="AyugramMessageHistoryEnabledInfo">Сохранять прежний текст и подписи перед изменением или удалением облачных сообщений. По умолчанию выключено; секретные и самоуничтожающиеся сообщения не сохраняются.</string>
+    <string name="AyugramMessageHistory">История сообщений</string>
+    <string name="AyugramMessageHistoryInfo">Просмотр локально сохранённых версий изменённых и удалённых облачных сообщений.</string>
+    <string name="AyugramMessageHistoryLoading">Загрузка истории…</string>
+    <string name="AyugramMessageHistoryEmpty">Локальная история сообщений пока пуста.</string>
+    <string name="AyugramMessageHistoryEdited">Изменено</string>
+    <string name="AyugramMessageHistoryDeleted">Удалено</string>
+    <string name="AyugramMessageHistoryEntryTitle">%1$s · %2$s</string>
+    <string name="AyugramMessageHistoryEntryInfo">Сообщение %1$d · %2$s</string>
+    <string name="AyugramMessageHistoryEntryDetails">%1$s
+%2$s
+Сообщение: %3$d
+Дата сообщения: %4$s
+Сохранено: %5$s
+
+%6$s</string>
+    <string name="AyugramMessageHistoryDetails">Запись истории</string>
+    <string name="AyugramMessageHistoryClose">Закрыть</string>
+    <string name="AyugramMessageHistoryPrevious">Предыдущая страница</string>
+    <string name="AyugramMessageHistoryNext">Следующая страница</string>
+    <string name="AyugramMessageHistoryPage">Страница %1$d</string>
+    <string name="AyugramMessageHistoryClear">Очистить историю</string>
+    <string name="AyugramMessageHistoryClearConfirm">Удалить всю локально сохранённую историю сообщений для этого аккаунта?</string>
+    <string name="AyugramMessageHistoryCancel">Отмена</string>
     <string name="IcegramPerformance">Быстродействие</string>
     <string name="IcegramApplyPreset">Применить Ice Mode</string>
     <string name="IcegramPresetInfo">Отключить необязательные анимации, размытие и автозапуск GIF и видео. Отдельные эффекты можно настроить ниже.</string>
+    <string name="IcegramClassicInterface">Включить классический интерфейс</string>
+    <string name="IcegramClassicInterfaceInfo">Упростить элементы управления, сделать углы более прямыми и отключить Liquid Glass и размытие интерфейса. Остальные настройки и функции чатов не меняются.</string>
     <string name="IcegramCompactCache">Компактный кэш изображений</string>
     <string name="IcegramCompactCacheInfo">До 20 МиБ суммарно для кэшей изображений, миниатюр, обоев и анимаций. Это не лимит всей ОЗУ приложения. Нужен перезапуск; изображения могут декодироваться чаще.</string>
     <string name="IcegramLazyWidgets">Виджеты по требованию</string>

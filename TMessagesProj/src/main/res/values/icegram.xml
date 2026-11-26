@@ -1,10 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="icegram_icon_background">#102C46</color>
-    <string name="IcegramSettings">icegram · Light and comfortable</string>
+    <string name="IcegramSettings">IceGram Settings</string>
+    <string name="ExteraGramSettings">ExteraGram Settings</string>
+    <string name="AyugramSettings">Ayugram Settings</string>
+    <string name="AyugramSettingsIntro">Ayugram privacy features are being added here in stages.</string>
+    <string name="AyugramPrivacy">Privacy</string>
+    <string name="AyugramGhostMode">Ghost Mode</string>
+    <string name="AyugramGhostModeInfo">Hide cloud-chat read receipts and typing indicators, and keep your account offline while enabled. Messages still become read locally; suppressed receipts are not replayed later.</string>
+    <string name="AyugramMessageHistoryEnabled">Local message history</string>
+    <string name="AyugramMessageHistoryEnabledInfo">Keep previous text and captions before cloud-message edits or deletions. Disabled by default; secret and self-destructing messages are excluded.</string>
+    <string name="AyugramMessageHistory">Message history</string>
+    <string name="AyugramMessageHistoryInfo">Browse the locally saved versions of edited and deleted cloud messages.</string>
+    <string name="AyugramMessageHistoryLoading">Loading history…</string>
+    <string name="AyugramMessageHistoryEmpty">No message history has been saved.</string>
+    <string name="AyugramMessageHistoryEdited">Edited</string>
+    <string name="AyugramMessageHistoryDeleted">Deleted</string>
+    <string name="AyugramMessageHistoryEntryTitle">%1$s · %2$s</string>
+    <string name="AyugramMessageHistoryEntryInfo">Message %1$d · %2$s</string>
+    <string name="AyugramMessageHistoryEntryDetails">%1$s
+%2$s
+Message: %3$d
+Message date: %4$s
+Saved: %5$s
+
+%6$s</string>
+    <string name="AyugramMessageHistoryDetails">History entry</string>
+    <string name="AyugramMessageHistoryClose">Close</string>
+    <string name="AyugramMessageHistoryPrevious">Previous page</string>
+    <string name="AyugramMessageHistoryNext">Next page</string>
+    <string name="AyugramMessageHistoryPage">Page %1$d</string>
+    <string name="AyugramMessageHistoryClear">Clear history</string>
+    <string name="AyugramMessageHistoryClearConfirm">Delete all locally saved message history for this account?</string>
+    <string name="AyugramMessageHistoryCancel">Cancel</string>
     <string name="IcegramPerformance">Performance</string>
     <string name="IcegramApplyPreset">Apply Ice Mode</string>
     <string name="IcegramPresetInfo">Turn off optional animations, blur and autoplay for GIFs and videos. Change individual effects below.</string>
+    <string name="IcegramClassicInterface">Apply classic interface</string>
+    <string name="IcegramClassicInterfaceInfo">Use simpler, square-cornered controls and disable Liquid Glass and interface blur. Other settings and chat features stay unchanged.</string>
     <string name="IcegramCompactCache">Compact image cache</string>
     <string name="IcegramCompactCacheInfo">Up to 20 MiB across the bitmap, thumbnail, wallpaper and animation caches. This is not a total RAM limit. Requires restart; may cause more image decoding.</string>
     <string name="IcegramLazyWidgets">Load widgets on demand</string>

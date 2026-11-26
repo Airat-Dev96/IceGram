@@ -80,7 +80,9 @@ def resources():
 
     # Verify references in the newly added Android sources against real resources.
     additions = list((MAIN / "java/org/icegram/messenger").glob("*.java"))
-    additions.append(MAIN / "java/com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
+    additions.extend((MAIN / "java/com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt",
+                      MAIN / "java/com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt",
+                      MAIN / "java/com/exteragram/messenger/preferences/MessageHistoryActivity.kt"))
     for path in additions:
         for kind, name in re.findall(r"\bR\.(string|drawable|mipmap|color)\.(\w+)", text(path)):
             check((kind, name) in SYMBOLS, f"Missing R.{kind}.{name} used by {path.name}")
@@ -188,7 +190,55 @@ def integration():
         check("IcegramConfig.areMapsEnabled()" in text(java / relative), f"Map entry guard missing: {relative}")
     settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
     check("PluginsController.isPluginEngineSupported()" in settings and "PluginsActivity()" in settings, "Plugin shortcut removed")
-    check("IcegramPreferencesActivity()" in text(java / "com/exteragram/messenger/preferences/MainPreferencesActivity.kt"), "icegram settings are unreachable")
+    profile = text(java / "org/telegram/ui/ProfileActivity.java")
+    for label, activity in (("ExteraGramSettings", "MainPreferencesActivity"),
+                            ("AyugramSettings", "AyugramPreferencesActivity"),
+                            ("IcegramSettings", "IcegramPreferencesActivity")):
+        check(f"R.string.{label}" in profile and f"new {activity}()" in profile,
+              f"Separate {label} entry is missing from the profile settings")
+    settings = text(java / "com/exteragram/messenger/preferences/IcegramPreferencesActivity.kt")
+    check("IcegramClassicInterface" in settings and "FLAG_LIQUID_GLASS" in settings,
+          "Classic interface action must disable Liquid Glass")
+    ghost = text(java / "org/icegram/messenger/GhostModeController.java")
+    for request in ("TL_messages_readHistory", "TL_channels_readHistory",
+                    "TL_messages_readMessageContents", "TL_channels_readMessageContents",
+                    "TL_messages_setTyping", "TL_messages_setEncryptedTyping"):
+        check(request in ghost, f"Ghost Mode does not cover {request}")
+    check("TL_sendMessageCancelAction" in ghost and "TL_messages_readEncryptedHistory" not in ghost,
+          "Ghost Mode must keep typing cancellations and secret-chat read behavior intact")
+    check("GhostModeController.shouldSuppressRequest(object)" in text(java / "org/telegram/tgnet/ConnectionsManager.java"),
+          "Ghost Mode request filter is not connected to the network send path")
+    check("!IcegramConfig.isGhostModeEnabled() && !ignoreSetOnline" in text(java / "org/telegram/messenger/MessagesController.java"),
+          "Ghost Mode must prevent online status updates")
+    check("onGhostModeChanged()" in text(java / "org/telegram/messenger/MessagesController.java"),
+          "Ghost Mode must reset the cached presence state when toggled")
+    history_config = text(java / "org/icegram/messenger/IcegramConfig.java")
+    history_storage = text(java / "org/telegram/messenger/MessagesStorage.java")
+    history_controller = text(java / "org/telegram/messenger/MessagesController.java")
+    history_ui = text(java / "com/exteragram/messenger/preferences/MessageHistoryActivity.kt")
+    migration = text(java / "org/telegram/messenger/DatabaseMigrationHelper.java")
+    check('getBoolean("ayugram_message_history", false)' in history_config,
+          "Message history must be disabled by default")
+    check("icegram_message_history" in history_storage and
+          "ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES = 1000" in history_storage and
+          "ICEGRAM_MESSAGE_HISTORY_MAX_TEXT_LENGTH = 8192" in history_storage,
+          "Message history storage must be bounded")
+    check("message.ttl == 0" in history_storage and
+          "!MessageObject.isEphemeral(message)" in history_storage and
+          "!DialogObject.isEncryptedDialog(dialogId)" in history_storage,
+          "Secret and self-destructing messages must not enter the history")
+    check("CREATE TABLE IF NOT EXISTS icegram_message_history" in migration and
+          'PRAGMA user_version = 182' in migration,
+          "Message history table migration is missing")
+    delete_internal = history_storage.split(
+        "private ArrayList<Long> markMessagesAsDeletedInternal(long dialogId", 1
+    )[1].split("public ArrayList<Long> markMessagesAsDeleted(", 1)[0]
+    check("saveMessageHistoryInternal" not in delete_internal and
+          "saveDeletedMessagesToHistory(key, arrayList)" in history_controller and
+          "saveDeletedMessagesToHistory(dialogId, ids)" in history_controller,
+          "Only server-originated message deletions should be journaled")
+    check("loadMessageHistoryPage" in history_ui and "showClearConfirmation" in history_ui,
+          "Message history page/details or confirmed clear action is missing")
     lite = text(java / "org/telegram/messenger/LiteMode.java")
     check("int defaultValue = 0," in lite and 'getBoolean("lite_mode_battery_follow_system", true)' in lite, "Wrong Ice Mode defaults")
     check("oldValue ^ newValue" in lite and "onFlagsUpdate(previous, flags)" in lite, "Effects must refresh when Ice Mode changes")

@@ -52,6 +52,7 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.StatsController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.icegram.messenger.GhostModeController;
 import org.telegram.utils.proxy.WebProxyConnectionTester;
 import org.telegram.utils.proxy.WebProxyTransport;
 import org.telegram.utils.proxy.ProxySettings;
@@ -492,6 +493,20 @@ public class ConnectionsManager extends BaseController {
             }
             object = modifiedRequest;
             object = FeedRequestNormalizer.normalize(currentAccount, object);
+
+            if (GhostModeController.shouldSuppressRequest(object)) {
+                TLRPC.TL_error ghostModeError = new TLRPC.TL_error();
+                ghostModeError.code = -1000;
+                ghostModeError.text = "GHOST_MODE_SUPPRESSED";
+                Utilities.stageQueue.postRunnable(() -> {
+                    if (onComplete != null) {
+                        onComplete.run(null, ghostModeError);
+                    } else if (onCompleteTimestamp != null) {
+                        onCompleteTimestamp.run(null, ghostModeError, 0);
+                    }
+                });
+                return;
+            }
 
             NativeByteBuffer buffer = new NativeByteBuffer(object.getObjectSize());
             object.serializeToStream(buffer);

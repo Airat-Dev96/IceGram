@@ -62,6 +62,8 @@ import org.telegram.ui.Components.VideoPlayer;
 import org.telegram.ui.DialogsActivity;
 import org.telegram.ui.EditWidgetActivity;
 import org.telegram.ui.Stories.StoriesController;
+import org.icegram.messenger.IcegramConfig;
+import org.icegram.messenger.MessageHistoryEntry;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -82,6 +84,8 @@ import java.util.function.Consumer;
 import me.vkryl.core.BitwiseUtils;
 
 public class MessagesStorage extends BaseController {
+    private static final int ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES = 1000;
+    private static final int ICEGRAM_MESSAGE_HISTORY_MAX_TEXT_LENGTH = 8192;
 
     private DispatchQueue2 storageQueue;
     private SQLiteDatabase database;
@@ -123,7 +127,7 @@ public class MessagesStorage extends BaseController {
         }
     }
 
-    public final static int LAST_DB_VERSION = 181;
+    public final static int LAST_DB_VERSION = 182;
     private boolean databaseMigrationInProgress;
     public boolean showClearDatabaseAlert;
 
@@ -251,6 +255,143 @@ public class MessagesStorage extends BaseController {
 
     public DispatchQueue2 getStorageQueue() {
         return storageQueue;
+    }
+
+    public void loadMessageHistoryPage(int offset, int limit, Consumer<ArrayList<MessageHistoryEntry>> callback) {
+        if (callback == null) {
+            return;
+        }
+        final int safeOffset = Math.max(0, offset);
+        final int safeLimit = Math.max(1, Math.min(limit, 100));
+        executeInStorageQueue(() -> {
+            ArrayList<MessageHistoryEntry> result = new ArrayList<>();
+            SQLiteCursor cursor = null;
+            try {
+                cursor = database.queryFinalized(
+                        "SELECT id, dialog_id, mid, message_date, changed_at, event_type, text " +
+                                "FROM icegram_message_history ORDER BY changed_at DESC, id DESC LIMIT ? OFFSET ?",
+                        safeLimit, safeOffset);
+                while (cursor.next()) {
+                    result.add(new MessageHistoryEntry(
+                            cursor.longValue(0),
+                            cursor.longValue(1),
+                            cursor.intValue(2),
+                            cursor.intValue(3),
+                            cursor.intValue(4),
+                            cursor.intValue(5),
+                            cursor.stringValue(6)
+                    ));
+                }
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                }
+            }
+            ArrayList<MessageHistoryEntry> finalResult = result;
+            AndroidUtilities.runOnUIThread(() -> callback.accept(finalResult));
+        });
+    }
+
+    public void clearMessageHistory(Runnable callback) {
+        executeInStorageQueue(() -> {
+            try {
+                database.executeFast("DELETE FROM icegram_message_history").stepThis().dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
+            }
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(callback);
+            }
+        });
+    }
+
+    public void saveDeletedMessagesToHistory(long dialogId, ArrayList<Integer> messageIds) {
+        if (messageIds == null || messageIds.isEmpty() || !IcegramConfig.isMessageHistoryEnabled()) {
+            return;
+        }
+        executeInStorageQueue(() -> saveDeletedMessagesToHistoryInternal(dialogId, messageIds));
+    }
+
+    private void saveDeletedMessagesToHistoryInternal(long dialogId, ArrayList<Integer> messageIds) {
+        SQLiteCursor cursor = null;
+        try {
+            String ids = TextUtils.join(",", messageIds);
+            if (dialogId == 0) {
+                cursor = database.queryFinalized(String.format(Locale.US,
+                        "SELECT uid, data FROM messages_v2 WHERE mid IN(%s) AND is_channel = 0", ids));
+            } else {
+                cursor = database.queryFinalized(String.format(Locale.US,
+                        "SELECT uid, data FROM messages_v2 WHERE mid IN(%s) AND uid = %d", ids, dialogId));
+            }
+            while (cursor.next()) {
+                long messageDialogId = cursor.longValue(0);
+                NativeByteBuffer data = cursor.byteBufferValue(1);
+                if (data == null) {
+                    continue;
+                }
+                try {
+                    TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                    if (message != null) {
+                        message.readAttachPath(data, getUserConfig().getClientUserId());
+                        saveMessageHistoryInternal(messageDialogId, message, MessageHistoryEntry.TYPE_DELETE);
+                    }
+                } finally {
+                    data.reuse();
+                }
+            }
+        } catch (Exception e) {
+            checkSQLException(e);
+        } finally {
+            if (cursor != null) {
+                cursor.dispose();
+            }
+        }
+    }
+
+    private boolean canSaveMessageHistory(long dialogId, TLRPC.Message message) {
+        return IcegramConfig.isMessageHistoryEnabled() && dialogId != 0 &&
+                !DialogObject.isEncryptedDialog(dialogId) && message != null &&
+                !(message instanceof TLRPC.TL_messageEmpty) && message.ttl_period == 0 &&
+                message.ttl == 0 && !MessageObject.isSecretMedia(message) &&
+                !MessageObject.isEphemeral(message) &&
+                (MessageObject.getMedia(message) == null || MessageObject.getMedia(message).ttl_seconds == 0) &&
+                !TextUtils.isEmpty(message.message);
+    }
+
+    private void saveMessageHistoryInternal(long dialogId, TLRPC.Message message, int type) {
+        if (!canSaveMessageHistory(dialogId, message)) {
+            return;
+        }
+        SQLitePreparedStatement state = null;
+        try {
+            state = database.executeFast("INSERT INTO icegram_message_history(dialog_id, mid, message_date, changed_at, event_type, text) VALUES(?, ?, ?, ?, ?, ?)");
+            state.bindLong(1, dialogId);
+            state.bindInteger(2, message.id);
+            state.bindInteger(3, message.date);
+            state.bindInteger(4, getConnectionsManager().getCurrentTime());
+            state.bindInteger(5, type);
+            String text = message.message;
+            if (text.length() > ICEGRAM_MESSAGE_HISTORY_MAX_TEXT_LENGTH) {
+                int end = ICEGRAM_MESSAGE_HISTORY_MAX_TEXT_LENGTH;
+                if (Character.isHighSurrogate(text.charAt(end - 1))) {
+                    end--;
+                }
+                text = text.substring(0, end);
+            }
+            state.bindString(6, text);
+            state.step();
+            state.dispose();
+            state = null;
+            database.executeFast("DELETE FROM icegram_message_history WHERE id NOT IN (SELECT id FROM icegram_message_history ORDER BY id DESC LIMIT " + ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES + ")").stepThis().dispose();
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (state != null) {
+                state.dispose();
+            }
+        }
     }
 
     private void postOrRunOnStorageQueue(Runnable runnable) {
@@ -551,7 +692,8 @@ public class MessagesStorage extends BaseController {
             "poll_votes_mentions_topics",
             "ephemeral_messages",
             "widget_state",
-            "widget_heights"
+            "widget_heights",
+            "icegram_message_history"
     };
 
     public static void createTables(SQLiteDatabase database) throws SQLiteException {
@@ -794,6 +936,10 @@ public class MessagesStorage extends BaseController {
 
         database.executeFast("CREATE TABLE widget_state(uid INTEGER, mid INTEGER, local TEXT, PRIMARY KEY(uid, mid));").stepThis().dispose();
         database.executeFast("CREATE TABLE widget_heights(uid INTEGER, mid INTEGER, width INTEGER, height INTEGER, date INTEGER, anchor INTEGER default 0, PRIMARY KEY(uid, mid, width));").stepThis().dispose();
+
+        database.executeFast("CREATE TABLE icegram_message_history(id INTEGER PRIMARY KEY AUTOINCREMENT, dialog_id INTEGER, mid INTEGER, message_date INTEGER, changed_at INTEGER, event_type INTEGER, text TEXT);").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS icegram_message_history_changed_idx ON icegram_message_history(changed_at, id);").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS icegram_message_history_message_idx ON icegram_message_history(dialog_id, mid);").stepThis().dispose();
 
         database.executeFast("PRAGMA user_version = " + MessagesStorage.LAST_DB_VERSION).stepThis().dispose();
 
@@ -16153,13 +16299,27 @@ public class MessagesStorage extends BaseController {
                 int readState = 0;
                 NativeByteBuffer customParams = null;
                 try {
-                    cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, read_state, custom_params FROM messages_v2 WHERE mid = %d AND uid = %d LIMIT 1", message.id, MessageObject.getDialogId(message)));
+                    cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, read_state, custom_params, data FROM messages_v2 WHERE mid = %d AND uid = %d LIMIT 1", message.id, MessageObject.getDialogId(message)));
                     if (!cursor.next()) {
                         cursor.dispose();
                         return;
                     }
                     readState = cursor.intValue(1);
                     customParams = cursor.byteBufferValue(2);
+                    NativeByteBuffer oldData = cursor.byteBufferValue(3);
+                    if (oldData != null) {
+                        try {
+                            TLRPC.Message oldMessage = TLRPC.Message.TLdeserialize(oldData, oldData.readInt32(false), false);
+                            if (oldMessage != null) {
+                                oldMessage.readAttachPath(oldData, getUserConfig().getClientUserId());
+                                if (!TextUtils.equals(oldMessage.message, message.message)) {
+                                    saveMessageHistoryInternal(message.dialog_id, oldMessage, MessageHistoryEntry.TYPE_EDIT);
+                                }
+                            }
+                        } finally {
+                            oldData.reuse();
+                        }
+                    }
                 } catch (Exception e) {
                     checkSQLException(e);
                 } finally {
@@ -16606,6 +16766,9 @@ public class MessagesStorage extends BaseController {
                                 if (data != null) {
                                     TLRPC.Message oldMessage = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
                                     oldMessage.readAttachPath(data, getUserConfig().clientUserId);
+                                    if (!TextUtils.equals(oldMessage.message, message.message)) {
+                                        saveMessageHistoryInternal(dialogId, oldMessage, MessageHistoryEntry.TYPE_EDIT);
+                                    }
                                     data.reuse();
                                     if (reactionUpdates != null) {
                                         reactionUpdates.add(new SavedReactionsUpdate(selfId, oldMessage, message));

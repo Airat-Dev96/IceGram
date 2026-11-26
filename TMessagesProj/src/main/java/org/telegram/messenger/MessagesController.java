@@ -52,6 +52,7 @@ import androidx.core.graphics.ColorUtils;
 import androidx.core.util.Consumer;
 
 import com.exteragram.messenger.ExteraConfig;
+import org.icegram.messenger.IcegramConfig;
 import com.exteragram.messenger.plugins.hooks.PluginsHooks;
 import com.exteragram.messenger.plugins.PluginsController;
 import com.exteragram.messenger.regdate.RegDateController;
@@ -10654,7 +10655,7 @@ public class MessagesController extends BaseController implements NotificationCe
         checkReadTasks();
 
         if (getUserConfig().isClientActivated()) {
-            if (!ignoreSetOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue) {
+            if (!IcegramConfig.isGhostModeEnabled() && !ignoreSetOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue) {
                 if (ApplicationLoader.mainInterfacePausedStageQueueTime != 0 && Math.abs(ApplicationLoader.mainInterfacePausedStageQueueTime - System.currentTimeMillis()) > 1000) {
                     if (statusSettingState != 1 && (lastStatusUpdateTime == 0 || Math.abs(System.currentTimeMillis() - lastStatusUpdateTime) >= 55000 || offlineSent)) {
                         statusSettingState = 1;
@@ -11295,6 +11296,13 @@ public class MessagesController extends BaseController implements NotificationCe
             getGlobalMainSettings().edit().putLong("proxy_dialog", promoDialogId).remove("proxyDialogAddress").putInt("nextPromoInfoCheckTime", nextPromoInfoCheckTime).apply();
             AndroidUtilities.runOnUIThread(this::removePromoDialog);
         }
+    }
+
+    public void onGhostModeChanged() {
+        statusSettingState = 0;
+        offlineSent = false;
+        lastStatusUpdateTime = 0;
+        updateTimerProc();
     }
 
     private void removePromoDialog() {
@@ -17859,6 +17867,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
             });
             getMessagesStorage().deletePushMessages(dialogId, ids);
+            getMessagesStorage().saveDeletedMessagesToHistory(dialogId, ids);
             ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(dialogId, ids, false, true, 0, 0);
             getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, ids, dialogIds);
         });
@@ -21555,6 +21564,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 long key = deletedMessages.keyAt(a);
                 ArrayList<Integer> arrayList = deletedMessages.valueAt(a);
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                    getMessagesStorage().saveDeletedMessagesToHistory(key, arrayList);
                     ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(key, arrayList, false, true, 0, 0);
                     getMessagesStorage().updateDialogsWithDeletedMessages(key, -key, arrayList, dialogIds);
                 });

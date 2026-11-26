@@ -1721,6 +1721,13 @@ public class DatabaseMigrationHelper {
             database.executeFast("PRAGMA user_version = 181").stepThis().dispose();
             version = 181;
         }
+        if (version == 181) {
+            database.executeFast("CREATE TABLE IF NOT EXISTS icegram_message_history(id INTEGER PRIMARY KEY AUTOINCREMENT, dialog_id INTEGER, mid INTEGER, message_date INTEGER, changed_at INTEGER, event_type INTEGER, text TEXT);").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS icegram_message_history_changed_idx ON icegram_message_history(changed_at, id);").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS icegram_message_history_message_idx ON icegram_message_history(dialog_id, mid);").stepThis().dispose();
+            database.executeFast("PRAGMA user_version = 182").stepThis().dispose();
+            version = 182;
+        }
 
         return version;
     }

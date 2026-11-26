@@ -161,6 +161,8 @@ import com.exteragram.messenger.profilecolor.ProfileColorTheme;
 import com.exteragram.messenger.profilecolor.ProfilePhotoFade;
 import com.exteragram.messenger.regdate.RegDateController;
 import com.exteragram.messenger.preferences.MainPreferencesActivity;
+import com.exteragram.messenger.preferences.IcegramPreferencesActivity;
+import com.exteragram.messenger.preferences.AyugramPreferencesActivity;
 import com.exteragram.messenger.preferences.utils.SettingsRegistry;
 import com.exteragram.messenger.utils.AppUtils;
 import com.exteragram.messenger.utils.system.SystemUtils;
@@ -714,6 +716,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int settingsSectionRow;
     private int settingsSectionRow2;
     private int exteraRow;
+    private int ayugramRow;
+    private int icegramRow;
     private int notificationRow;
     private int languageRow;
     private int privacyRow;
@@ -4821,6 +4825,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 presentFragment(fragment);
             } else if (position == exteraRow) {
                 presentFragment(new MainPreferencesActivity());
+            } else if (position == ayugramRow) {
+                presentFragment(new AyugramPreferencesActivity());
+            } else if (position == icegramRow) {
+                presentFragment(new IcegramPreferencesActivity());
             } else if (position == notificationRow) {
                 presentFragment(new NotificationsSettingsActivity());
             } else if (position == privacyRow) {
@@ -11364,6 +11372,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         settingsSectionRow = -1;
         settingsSectionRow2 = -1;
         exteraRow = -1;
+        ayugramRow = -1;
+        icegramRow = -1;
         notificationRow = -1;
         languageRow = -1;
         premiumRow = -1;
@@ -11541,6 +11551,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
                 settingsSectionRow2 = rowCount++;
                 exteraRow = rowCount++;
+                ayugramRow = rowCount++;
+                icegramRow = rowCount++;
                 chatRow = rowCount++;
                 privacyRow = rowCount++;
                 notificationRow = rowCount++;
@@ -14837,7 +14849,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         if (IconManager.INSTANCE.isBasePackOnly(IconPackType.DEFAULT))
                             textCell.setImageLeft(23);
                     } else if (position == exteraRow) {
-                        textCell.setTextAndIcon(LocaleController.getString(R.string.Preferences), R.drawable.extera_outline, true);
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.ExteraGramSettings), R.drawable.extera_outline, true);
+                    } else if (position == ayugramRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.AyugramSettings), R.drawable.msg_settings, true);
+                    } else if (position == icegramRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.IcegramSettings), R.drawable.msg_settings, true);
                     } else if (position == notificationRow) {
                         textCell.setTextAndIcon(LocaleController.getString(R.string.NotificationsAndSounds), R.drawable.msg2_notifications, true);
                     } else if (position == privacyRow) {
@@ -15295,7 +15311,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         position == versionRow || position == dataRow || position == chatRow ||
                         position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
                         position == policyRow || position == sendLogsRow || position == sendLastLogsRow || position == exteraRow ||
-                        position == clearLogsRow || position == updateRemoteConfigRow || position == switchBackendRow || position == setAvatarRow ||
+                        position == ayugramRow || position == icegramRow || position == clearLogsRow || position == updateRemoteConfigRow || position == switchBackendRow || position == setAvatarRow ||
                         position == addToGroupButtonRow || position == premiumRow || position == premiumGiftingRow ||
                         position == businessRow || position == liteModeRow || position == birthdayRow || position == channelRow ||
                         position == starsRow || position == tonRow || position == linkedCommunityRow;
@@ -15337,7 +15353,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             } else if (position == settingsTimerRow || position == settingsKeyRow || position == reportRow || position == reportReactionRow || position == deleteReactionRow ||
                     position == subscribersRow || position == subscribersRequestsRow || position == administratorsRow || position == settingsRow || position == blockedUsersRow ||
                     position == addMemberRow || position == joinRow || position == unblockRow ||
-                    position == sendMessageRow || position == notificationRow || position == exteraRow || position == privacyRow ||
+                    position == sendMessageRow || position == notificationRow || position == exteraRow || position == ayugramRow || position == icegramRow || position == privacyRow ||
                     position == languageRow || position == dataRow || position == chatRow ||
                     position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
                     position == policyRow || position == sendLogsRow || position == sendLastLogsRow ||
@@ -16712,6 +16728,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, settingsSectionRow, sparseIntArray);
             put(++pointer, settingsSectionRow2, sparseIntArray);
             put(++pointer, exteraRow, sparseIntArray);
+            put(++pointer, ayugramRow, sparseIntArray);
+            put(++pointer, icegramRow, sparseIntArray);
             put(++pointer, notificationRow, sparseIntArray);
             put(++pointer, languageRow, sparseIntArray);
             put(++pointer, premiumRow, sparseIntArray);

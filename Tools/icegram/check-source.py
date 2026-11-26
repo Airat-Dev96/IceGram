@@ -192,15 +192,18 @@ def integration():
         check("IcegramConfig.areMapsEnabled()" in text(java / relative), f"Map entry guard missing: {relative}")
     settings = text(java / "com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt")
     check("PluginsController.isPluginEngineSupported()" in settings and "PluginsActivity()" in settings, "Plugin shortcut removed")
-    main_settings = text(java / "com/exteragram/messenger/preferences/MainPreferencesActivity.kt")
-    hub_items = ("EXTERAGRAM,", "AYUGRAM,", "ICEGRAM")
-    hub_routes = ("presentFragment(ExteraGramPreferencesActivity())",
-                  "presentFragment(AyugramPreferencesActivity())",
-                  "presentFragment(IcegramFeaturesPreferencesActivity())")
-    check(all(item in main_settings for item in hub_items) and
-          main_settings.index(hub_items[0]) < main_settings.index(hub_items[1]) < main_settings.index(hub_items[2]) and
-          all(route in main_settings for route in hub_routes),
-          "The main settings hub must show ExteraGram, AyuGram and IceGram sections in order")
+    root_settings = text(java / "org/telegram/ui/SettingsActivity.java")
+    direct_settings = (
+        ("-1", "ExteraGramSettings", "ExteraGramPreferencesActivity"),
+        ("-2", "AyugramSettings", "AyugramPreferencesActivity"),
+        ("-3", "IcegramSettings", "IcegramFeaturesPreferencesActivity"),
+    )
+    check(all(f"Factory.of({item_id}," in root_settings and
+              f"getString(R.string.{title})" in root_settings and
+              f"new {route}()" in root_settings
+              for item_id, title, route in direct_settings) and
+          "MainPreferencesActivity" not in root_settings,
+          "The main settings screen must open ExteraGram, AyuGram and IceGram directly")
     extera_settings = text(java / "com/exteragram/messenger/preferences/ExteraGramPreferencesActivity.kt")
     check("PreferenceItem.GENERAL_CATEGORY" in extera_settings and
           "PreferenceItem.APPEARANCE_CATEGORY" in extera_settings and

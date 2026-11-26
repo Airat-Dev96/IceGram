@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="icegram_icon_background">#102C46</color>
-    <string name="IcegramSettings">IceGram Settings</string>
     <string name="ExteraGramSettings">ExteraGram Settings</string>
-    <string name="AyugramSettings">Ayugram Settings</string>
+    <string name="AyugramSettings">AyuGram Settings</string>
     <string name="AyugramPrivacy">Privacy</string>
     <string name="AyugramGhostMode">Ghost Mode</string>
     <string name="AyugramGhostModeInfo">Choose independently whether to hide online status, typing indicators and cloud-chat read receipts.</string>

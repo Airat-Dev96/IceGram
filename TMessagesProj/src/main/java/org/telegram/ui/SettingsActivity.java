@@ -67,7 +67,9 @@ import com.exteragram.messenger.ExteraConfig;
 import com.exteragram.messenger.GlassOutlineStyle;
 import com.exteragram.messenger.config.BottomNavigationBar;
 import com.exteragram.messenger.debug.DebugActivity;
-import com.exteragram.messenger.preferences.MainPreferencesActivity;
+import com.exteragram.messenger.preferences.AyugramPreferencesActivity;
+import com.exteragram.messenger.preferences.ExteraGramPreferencesActivity;
+import com.exteragram.messenger.preferences.IcegramFeaturesPreferencesActivity;
 import com.exteragram.messenger.utils.AppUtils;
 import com.exteragram.messenger.utils.ui.tabs.HideOnScrollTracker;
 import com.exteragram.messenger.utils.ui.tabs.MainTabsUiHelper;
@@ -852,7 +854,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        items.add(SettingCell.Factory.of(-1, 0xFF102C46, 0xFF102C46, Theme.isCurrentThemeMonet() ? R.drawable.ic_icegram_monochrome : R.drawable.ic_icegram_foreground, getString(R.string.Preferences)));
+        items.add(SettingCell.Factory.of(-1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.extera_outline, getString(R.string.ExteraGramSettings)));
+        items.add(SettingCell.Factory.of(-2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.msg_settings, getString(R.string.AyugramSettings)));
+        items.add(SettingCell.Factory.of(-3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.ic_icegram_monochrome, getString(R.string.IcegramSettings)));
 
         items.add(UItem.asShadow(null));
 
@@ -992,7 +996,13 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
         switch (item.id) {
             case -1:
-                presentSettingFragment(new MainPreferencesActivity());
+                presentSettingFragment(new ExteraGramPreferencesActivity());
+                break;
+            case -2:
+                presentSettingFragment(new AyugramPreferencesActivity());
+                break;
+            case -3:
+                presentSettingFragment(new IcegramFeaturesPreferencesActivity());
                 break;
             case 1:
                 presentSettingFragment(new UserInfoActivity());

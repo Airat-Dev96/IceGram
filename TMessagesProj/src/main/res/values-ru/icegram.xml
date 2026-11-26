@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="IcegramSettings">Настройки IceGram</string>
     <string name="ExteraGramSettings">Настройки ExteraGram</string>
-    <string name="AyugramSettings">Настройки Ayugram</string>
+    <string name="AyugramSettings">Настройки AyuGram</string>
     <string name="AyugramPrivacy">Приватность</string>
     <string name="AyugramGhostMode">Режим призрака</string>
     <string name="AyugramGhostModeInfo">Можно отдельно скрывать статус «в сети», набор текста и отметки о прочтении в облачных чатах.</string>

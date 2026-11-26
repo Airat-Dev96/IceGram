@@ -4,8 +4,9 @@ An independent Android Telegram client based on
 [exteraGram 13.2.2](https://github.com/exteraSquad/exteraGram).
 This is not an official Telegram or exteraGram release.
 
-**Prototype: no APK has been built or tested yet.** Lower memory use, a smaller
-APK or better battery life have not been measured and are not guaranteed.
+**Experimental: APKs have been built in CI; device testing is still required.**
+Lower memory use, a smaller APK or better battery life have not been measured
+and are not guaranteed. See [NIGHT_LOG.md](NIGHT_LOG.md) for the feature audit.
 
 ## What changes
 
@@ -58,6 +59,10 @@ Plugin SDK documentation is in [plugins-pysdk](plugins-pysdk/README.md).
 Based on [exteraGram](https://github.com/exteraSquad/exteraGram) and
 [Telegram for Android](https://github.com/DrKLO/Telegram).
 Upstream authorship and copyright notices are retained.
+
+Thanks to [AyuGram](https://github.com/AyuGram/AyuGram4A) for the privacy and
+message-history reference implementation and to **@ProxyMTProto** for the
+public proxy source. These credits do not imply affiliation or endorsement.
 
 Upstream also credits [Catogram](https://github.com/Catogram/Catogram),
 [Nekogram](https://gitlab.com/Nekogram/Nekogram),

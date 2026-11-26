@@ -40,7 +40,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
         HIDE_PHONE, SAVE_BUTTON,
-        MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY,
+        MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY, HISTORY_EXCEPTIONS,
         GHOST_QUICK, GHOST_OPTIONS, SILENT_SEND,
         AUTO_PROXY,
         UPSTREAM, PLUGINS;
@@ -82,6 +82,8 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
         items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
             subtext = getString(R.string.AyugramMessageHistoryInfo)))
+        items.add(uButton(Item.HISTORY_EXCEPTIONS, getString(R.string.IcegramHistoryExceptions),
+            subtext = getString(R.string.IcegramHistoryExceptionsInfo)))
         items.add(UItem.asShadow())
 
         items.add(UItem.asHeader(getString(R.string.IcegramNetwork)))
@@ -141,6 +143,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             Item.SAVE_BUTTON.id -> toggleBooleanSettingAndRefresh(item) { showSaveMessageButton = it }
             Item.MESSAGE_HISTORY_ENABLED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setMessageHistoryEnabled(it) }
             Item.MESSAGE_HISTORY.id -> presentFragment(MessageHistoryActivity())
+            Item.HISTORY_EXCEPTIONS.id -> presentFragment(MessageHistoryExceptionsActivity())
             Item.GHOST_QUICK.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setEnabled(it) }
             Item.GHOST_OPTIONS.id -> presentFragment(AyugramPreferencesActivity())
             Item.SILENT_SEND.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setSilentSendEnabled(it) }

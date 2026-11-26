@@ -69,6 +69,7 @@ jobs:
         run: |
           sh Tools/icegram/test-policy.sh
           python3 Tools/icegram/test-ghost.py
+          python3 Tools/icegram/test-history.py
           python3 Tools/icegram/check-source.py
           python3 Tools/icegram/test-apk.py
       - name: Generate icegram icons and build single-ABI full release

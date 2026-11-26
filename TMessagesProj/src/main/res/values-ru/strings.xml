@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="IcegramSettings">Настройки IceGram</string>
+    <string name="IcegramHistoryExceptions">Исключения истории сообщений</string>
+    <string name="IcegramHistoryExceptionsInfo">Не сохранять историю выбранных чатов. Добавление чата также очищает его уже сохранённые версии. Секретные и самоуничтожающиеся сообщения исключены всегда.</string>
+    <string name="IcegramHistoryExceptionAdd">Исключить чат</string>
+    <string name="IcegramHistoryExceptionResume">Возобновить сохранение для чата</string>
+    <string name="IcegramHistoryExceptionResumeInfo">Будут сохраняться только будущие правки и удаления. Очищенные версии восстановить нельзя.</string>
     <string name="IcegramGhostQuickInfo">Одновременно скрывать онлайн, набор текста, прочтения облачных сообщений и просмотры историй. Не меняет отправку без звука и локальную историю.</string>
     <string name="IcegramGhostOptions">Настроить режим призрака</string>
     <string name="IcegramHideStoryViews">Скрывать просмотры историй</string>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="IcegramSettings">IceGram Settings</string>
+    <string name="IcegramHistoryExceptions">Message history exceptions</string>
+    <string name="IcegramHistoryExceptionsInfo">Do not save history for selected chats. Adding a chat also clears its already saved versions. Secret and self-destructing messages are always excluded.</string>
+    <string name="IcegramHistoryExceptionAdd">Exclude a chat</string>
+    <string name="IcegramHistoryExceptionResume">Resume saving for this chat</string>
+    <string name="IcegramHistoryExceptionResumeInfo">Only future edits and deletions will be saved. Cleared versions cannot be restored.</string>
     <string name="IcegramGhostQuickInfo">Toggle hidden online, typing, cloud read receipts and story views together. Does not change silent sending or local history.</string>
     <string name="IcegramGhostOptions">Ghost Mode controls</string>
     <string name="IcegramHideStoryViews">Hide story views</string>

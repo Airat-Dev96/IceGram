@@ -86,6 +86,7 @@ import me.vkryl.core.BitwiseUtils;
 public class MessagesStorage extends BaseController {
     private static final int ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES = 1000;
     private static final int ICEGRAM_MESSAGE_HISTORY_MAX_TEXT_LENGTH = 8192;
+    private boolean messageHistoryPruneScheduled;
 
     private DispatchQueue2 storageQueue;
     private SQLiteDatabase database;
@@ -307,11 +308,32 @@ public class MessagesStorage extends BaseController {
         });
     }
 
+    public void clearMessageHistoryForDialog(long dialogId, Runnable callback) {
+        executeInStorageQueue(() -> {
+            SQLitePreparedStatement state = null;
+            try {
+                state = database.executeFast("DELETE FROM icegram_message_history WHERE dialog_id = ?");
+                state.bindLong(1, dialogId);
+                state.step();
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                if (state != null) {
+                    state.dispose();
+                }
+            }
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(callback);
+            }
+        });
+    }
+
     public void saveDeletedMessagesToHistory(long dialogId, ArrayList<Integer> messageIds) {
         if (messageIds == null || messageIds.isEmpty() || !IcegramConfig.isMessageHistoryEnabled()) {
             return;
         }
-        executeInStorageQueue(() -> saveDeletedMessagesToHistoryInternal(dialogId, messageIds));
+        ArrayList<Integer> snapshot = new ArrayList<>(messageIds);
+        executeInStorageQueue(() -> saveDeletedMessagesToHistoryInternal(dialogId, snapshot));
     }
 
     private void saveDeletedMessagesToHistoryInternal(long dialogId, ArrayList<Integer> messageIds) {
@@ -352,6 +374,7 @@ public class MessagesStorage extends BaseController {
 
     private boolean canSaveMessageHistory(long dialogId, TLRPC.Message message) {
         return IcegramConfig.isMessageHistoryEnabled() && dialogId != 0 &&
+                !IcegramConfig.isMessageHistoryExcluded(currentAccount, dialogId) &&
                 !DialogObject.isEncryptedDialog(dialogId) && message != null &&
                 !(message instanceof TLRPC.TL_messageEmpty) && message.ttl_period == 0 &&
                 message.ttl == 0 && !MessageObject.isSecretMedia(message) &&
@@ -384,7 +407,7 @@ public class MessagesStorage extends BaseController {
             state.step();
             state.dispose();
             state = null;
-            database.executeFast("DELETE FROM icegram_message_history WHERE id NOT IN (SELECT id FROM icegram_message_history ORDER BY id DESC LIMIT " + ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES + ")").stepThis().dispose();
+            scheduleMessageHistoryPrune();
         } catch (Exception e) {
             FileLog.e(e);
         } finally {
@@ -392,6 +415,22 @@ public class MessagesStorage extends BaseController {
                 state.dispose();
             }
         }
+    }
+
+    private void scheduleMessageHistoryPrune() {
+        if (messageHistoryPruneScheduled) {
+            return;
+        }
+        messageHistoryPruneScheduled = true;
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast("DELETE FROM icegram_message_history WHERE id NOT IN (SELECT id FROM icegram_message_history ORDER BY id DESC LIMIT " + ICEGRAM_MESSAGE_HISTORY_MAX_ENTRIES + ")").stepThis().dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                messageHistoryPruneScheduled = false;
+            }
+        });
     }
 
     private void postOrRunOnStorageQueue(Runnable runnable) {
@@ -16313,7 +16352,7 @@ public class MessagesStorage extends BaseController {
                             if (oldMessage != null) {
                                 oldMessage.readAttachPath(oldData, getUserConfig().getClientUserId());
                                 if (!TextUtils.equals(oldMessage.message, message.message)) {
-                                    saveMessageHistoryInternal(message.dialog_id, oldMessage, MessageHistoryEntry.TYPE_EDIT);
+                                    saveMessageHistoryInternal(MessageObject.getDialogId(message), oldMessage, MessageHistoryEntry.TYPE_EDIT);
                                 }
                             }
                         } finally {

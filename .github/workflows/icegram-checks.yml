@@ -28,5 +28,7 @@ jobs:
         run: python3 Tools/icegram/check-source.py
       - name: Test Ghost Mode policy without Android
         run: python3 Tools/icegram/test-ghost.py
+      - name: Test message history SQL and privacy guards
+        run: python3 Tools/icegram/test-history.py
       - name: Test APK verification checks with fixtures
         run: python3 Tools/icegram/test-apk.py

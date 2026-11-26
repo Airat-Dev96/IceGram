@@ -5,6 +5,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.UserConfig;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /** No services, timers, network access or per-frame preference reads. */
 public final class IcegramConfig {
@@ -179,6 +184,43 @@ public final class IcegramConfig {
     public static void setMessageHistoryEnabled(boolean enabled) {
         preferences().edit().putBoolean("ayugram_message_history", enabled).apply();
         messageHistoryEnabled = enabled;
+    }
+
+    private static String historyExceptionsKey(int account) {
+        return "history_excluded_dialogs_" + UserConfig.getInstance(account).getClientUserId();
+    }
+
+    public static Set<Long> getMessageHistoryExcludedDialogs(int account) {
+        Set<Long> result = new HashSet<>();
+        for (String value : preferences().getStringSet(historyExceptionsKey(account), Collections.emptySet())) {
+            try {
+                long dialogId = Long.parseLong(value);
+                if (dialogId != 0) {
+                    result.add(dialogId);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return result;
+    }
+
+    public static boolean isMessageHistoryExcluded(int account, long dialogId) {
+        return preferences().getStringSet(historyExceptionsKey(account), Collections.emptySet())
+                .contains(Long.toString(dialogId));
+    }
+
+    public static synchronized void setMessageHistoryExcluded(int account, long dialogId, boolean excluded) {
+        if (dialogId == 0) {
+            return;
+        }
+        String key = historyExceptionsKey(account);
+        Set<String> values = new HashSet<>(preferences().getStringSet(key, Collections.emptySet()));
+        if (excluded) {
+            values.add(Long.toString(dialogId));
+        } else {
+            values.remove(Long.toString(dialogId));
+        }
+        preferences().edit().putStringSet(key, values).apply();
     }
 
     public static boolean isAutoProxyEnabled() {

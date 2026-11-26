@@ -84,7 +84,8 @@ def resources():
                       MAIN / "java/com/exteragram/messenger/preferences/MainPreferencesActivity.kt",
                       MAIN / "java/com/exteragram/messenger/preferences/ExteraGramPreferencesActivity.kt",
                       MAIN / "java/com/exteragram/messenger/preferences/AyugramPreferencesActivity.kt",
-                      MAIN / "java/com/exteragram/messenger/preferences/MessageHistoryActivity.kt"))
+                      MAIN / "java/com/exteragram/messenger/preferences/MessageHistoryActivity.kt",
+                      MAIN / "java/com/exteragram/messenger/preferences/MessageHistoryExceptionsActivity.kt"))
     for path in additions:
         for kind, name in re.findall(r"\bR\.(string|drawable|mipmap|color)\.(\w+)", text(path)):
             check((kind, name) in SYMBOLS, f"Missing R.{kind}.{name} used by {path.name}")

@@ -74,6 +74,7 @@ jobs:
         if: ${{ !inputs.r8_diagnostics_only }}
         env:
           ICEGRAM_ABI: ${{ inputs.abi }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           case "$ICEGRAM_ABI" in
             arm64) variant=FullArm64Release ;;

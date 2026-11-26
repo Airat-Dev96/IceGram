@@ -21,7 +21,7 @@ class AutoProxyWorker(
 
         return try {
             val result = suspendCancellableCoroutine { continuation ->
-                AutoProxyController.getInstance().refresh { refreshResult ->
+                AutoProxyController.getInstance().refresh(true) { refreshResult ->
                     if (continuation.isActive) {
                         continuation.resume(refreshResult)
                     }

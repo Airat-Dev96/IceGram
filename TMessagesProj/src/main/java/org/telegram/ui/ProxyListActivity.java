@@ -224,7 +224,10 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         }
 
         public void setProxy(SharedConfig.ProxyInfo proxyInfo) {
-            textView.setText(ProxyController.getInstance().getDisplayName(proxyInfo));
+            ProxyController controller = ProxyController.getInstance();
+            String name = controller.getDisplayName(proxyInfo);
+            textView.setText(controller.isAutomaticProxy(proxyInfo)
+                    ? getString(R.string.IcegramProxyAutoBadge) + " · " + name : name);
             currentInfo = proxyInfo;
 
             if (pinDrawable == null) {

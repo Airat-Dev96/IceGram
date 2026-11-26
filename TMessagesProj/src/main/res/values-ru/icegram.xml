@@ -52,7 +52,7 @@
     <string name="IcegramComfort">Полезные мелочи</string>
     <string name="IcegramNetwork">Сеть</string>
     <string name="IcegramAutoProxy">Автоматические прокси</string>
-    <string name="IcegramAutoProxyInfo">Собирать сторонние MTProto-прокси из @ProxyMTProto, проверять их и хранить отдельно от добавленных вручную.</string>
+    <string name="IcegramAutoProxyInfo">Собирать MTProto-прокси из последних постов @ProxyMTProto. Проверять до 100 новых уникальных ссылок за обновление и хранить отдельно от ручных прокси.</string>
     <string name="IcegramAutoProxyEnabled">Включить автоматический сбор прокси</string>
     <string name="IcegramAutoProxyEnabledInfo">Периодически получать и проверять прокси из @ProxyMTProto. Прокси не добавляются, если источник не удалось прочитать.</string>
     <string name="IcegramAutoProxyRefresh">Обновить прокси сейчас</string>
@@ -63,8 +63,8 @@
     <string name="IcegramAutoProxyNotSwitched">нет</string>
     <string name="IcegramAutoProxyInterval">Интервал обновления</string>
     <string name="IcegramAutoProxyHours">%1$d ч</string>
-    <string name="IcegramAutoProxyCount">Количество прокси</string>
-    <string name="IcegramAutoProxyCountValue">%1$d прокси</string>
+    <string name="IcegramAutoProxyCount">Последние посты источника</string>
+    <string name="IcegramAutoProxyCountValue">%1$d постов</string>
     <string name="IcegramAutoProxyRemoveDead">Удалять неработающие автоматические прокси</string>
     <string name="IcegramAutoProxyRemoveDeadInfo">Удалять только автоматически собранные прокси, если они не прошли проверку или превысили лимит ping.</string>
     <string name="IcegramAutoProxyAutoSwitch">Автоматически переключаться на лучший прокси</string>

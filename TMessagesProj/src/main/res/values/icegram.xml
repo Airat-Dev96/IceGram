@@ -53,7 +53,7 @@ Saved: %5$s
     <string name="IcegramComfort">Useful shortcuts</string>
     <string name="IcegramNetwork">Network</string>
     <string name="IcegramAutoProxy">Automatic proxies</string>
-    <string name="IcegramAutoProxyInfo">Collect third-party MTProto proxies from @ProxyMTProto, check them and manage them separately from manually added proxies.</string>
+    <string name="IcegramAutoProxyInfo">Collect MTProto proxies from recent @ProxyMTProto posts. Check up to 100 new unique links per refresh and keep them separate from manual proxies.</string>
     <string name="IcegramAutoProxyEnabled">Enable automatic proxy collection</string>
     <string name="IcegramAutoProxyEnabledInfo">Periodically collect and validate proxies from @ProxyMTProto. No proxy is added until the source is successfully read.</string>
     <string name="IcegramAutoProxyRefresh">Refresh proxies now</string>
@@ -64,8 +64,8 @@ Saved: %5$s
     <string name="IcegramAutoProxyNotSwitched">no</string>
     <string name="IcegramAutoProxyInterval">Refresh interval</string>
     <string name="IcegramAutoProxyHours">%1$d hours</string>
-    <string name="IcegramAutoProxyCount">Proxy count</string>
-    <string name="IcegramAutoProxyCountValue">%1$d proxies</string>
+    <string name="IcegramAutoProxyCount">Recent source posts</string>
+    <string name="IcegramAutoProxyCountValue">%1$d posts</string>
     <string name="IcegramAutoProxyRemoveDead">Remove dead automatic proxies</string>
     <string name="IcegramAutoProxyRemoveDeadInfo">Remove only proxies collected automatically when they fail validation or exceed the ping limit.</string>
     <string name="IcegramAutoProxyAutoSwitch">Switch to the best proxy automatically</string>

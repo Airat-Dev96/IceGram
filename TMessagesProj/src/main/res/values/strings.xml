@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="IcegramSettings">IceGram Settings</string>
+    <string name="IcegramProxyAutoBadge">Auto</string>
     <string name="IcegramHistoryExceptions">Message history exceptions</string>
     <string name="IcegramHistoryExceptionsInfo">Do not save history for selected chats. Adding a chat also clears its already saved versions. Secret and self-destructing messages are always excluded.</string>
     <string name="IcegramHistoryExceptionAdd">Exclude a chat</string>

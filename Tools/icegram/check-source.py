@@ -265,6 +265,28 @@ def integration():
     check("loadMessageHistoryPage" in history_ui and "showClearConfirmation" in history_ui,
           "Message history page/details or confirmed clear action is missing")
     lite = text(java / "org/telegram/messenger/LiteMode.java")
+    auto_proxy = text(java / "com/exteragram/messenger/proxy/AutoProxyController.java")
+    auto_worker = text(java / "com/exteragram/messenger/proxy/AutoProxyWorker.kt")
+    auto_scheduler = text(java / "com/exteragram/messenger/proxy/AutoProxyScheduler.java")
+    check('SOURCE_CHANNEL = "ProxyMTProto"' in auto_proxy and
+          "request.limit = postLimit" in auto_proxy and
+          "Math.min(messages.size(), postLimit)" in auto_proxy,
+          "Automatic proxy selection must limit source posts, not only extracted links")
+    check("MAX_PARALLEL_CHECKS = 5" in auto_proxy and "inFlight < MAX_PARALLEL_CHECKS" in auto_proxy and
+          ".checkProxy(candidate.result.settings" in auto_proxy,
+          "Automatic proxies must use the native checker with at most five logical in-flight checks")
+    check("ProxySettings.fromUri(Uri.parse(link))" in auto_proxy and "LinkedHashMap" in auto_proxy and
+          "settings.getType() != ProxySettings.Type.MTPROTO" in auto_proxy,
+          "Automatic proxies must use the validated MTProto parser and deduplication")
+    check("!controller.isAutomaticProxy(stored)" in auto_proxy and
+          "current != initialProxy" in auto_proxy and
+          "current != null && !controller.isAutomaticProxy(current)" in auto_proxy,
+          "Automatic refresh must preserve manual proxies and concurrent user choices")
+    check("refresh(true)" in auto_worker and auto_proxy.count("background && !IcegramConfig.isAutoProxyEnabled()") == 2 and
+          "NetworkType.CONNECTED" in auto_scheduler and "ExistingPeriodicWorkPolicy.UPDATE" in auto_scheduler,
+          "Background refresh must require network, remain unique and stop applying results after disable")
+    check("IcegramProxyAutoBadge" in text(java / "org/telegram/ui/ProxyListActivity.java"),
+          "Automatic proxies need a visible localized label")
     check("int defaultValue = 0," in lite and 'getBoolean("lite_mode_battery_follow_system", true)' in lite, "Wrong Ice Mode defaults")
     check("oldValue ^ newValue" in lite and "onFlagsUpdate(previous, flags)" in lite, "Effects must refresh when Ice Mode changes")
     updater = text(java / "com/exteragram/messenger/updater/UpdaterUtils.java")

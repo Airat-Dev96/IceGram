@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="IcegramSettings">Настройки IceGram</string>
+    <string name="IcegramProxyAutoBadge">Авто</string>
     <string name="IcegramHistoryExceptions">Исключения истории сообщений</string>
     <string name="IcegramHistoryExceptionsInfo">Не сохранять историю выбранных чатов. Добавление чата также очищает его уже сохранённые версии. Секретные и самоуничтожающиеся сообщения исключены всегда.</string>
     <string name="IcegramHistoryExceptionAdd">Исключить чат</string>

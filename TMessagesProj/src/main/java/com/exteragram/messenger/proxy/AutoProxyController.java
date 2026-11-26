@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 public final class AutoProxyController {
     public static final String SOURCE_CHANNEL = "ProxyMTProto";
     public static final int MAX_PARALLEL_CHECKS = 5;
-    private static final int SOURCE_MESSAGE_LIMIT = 100;
+    private static final int MAX_DISCOVERED_PROXIES = 100;
     private static final long SOURCE_TIMEOUT_MILLIS = 60_000L;
     private static final long CHECK_TIMEOUT_MILLIS = 15_000L;
     private static final long AUTO_SWITCH_THROTTLE_MILLIS = 5 * 60_000L;
@@ -75,6 +75,10 @@ public final class AutoProxyController {
     }
 
     public void refresh(Callback callback) {
+        refresh(false, callback);
+    }
+
+    public void refresh(boolean background, Callback callback) {
         if (callback == null) {
             return;
         }
@@ -84,19 +88,25 @@ public final class AutoProxyController {
         }
 
         final int account = UserConfig.selectedAccount;
+        final int postLimit = IcegramConfig.getAutoProxyCount();
         AndroidUtilities.runOnUIThread(() -> {
             ProxyController controller = ProxyController.getInstance();
             SharedConfig.ProxyInfo initialProxy = controller.getCurrentProxy();
             boolean initiallyEnabled = controller.isProxyEnabled();
-            new SourceLoader(account, (messages, error) -> {
+            new SourceLoader(account, postLimit, (messages, error) -> {
                 if (error != null || messages == null) {
                     refreshInProgress.set(false);
                     callback.onComplete(new Result(false, 0, 0, 0, 0, false));
                     return;
                 }
 
-                ArrayList<ProxySettings> settings = extractProxies(messages.messages, IcegramConfig.getAutoProxyCount());
-                new CandidateChecker(account, settings, initialProxy, initiallyEnabled, callback).start();
+                if (background && !IcegramConfig.isAutoProxyEnabled()) {
+                    refreshInProgress.set(false);
+                    callback.onComplete(new Result(true, 0, 0, 0, 0, false));
+                    return;
+                }
+                ArrayList<ProxySettings> settings = extractProxies(messages.messages, postLimit);
+                new CandidateChecker(account, settings, initialProxy, initiallyEnabled, background, callback).start();
             }).start();
         });
     }
@@ -104,13 +114,15 @@ public final class AutoProxyController {
     // Source resolution, request callbacks and proxy results are serialized on the UI thread.
     private static final class SourceLoader {
         private final int account;
+        private final int postLimit;
         private final SourceCallback callback;
         private final Runnable timeout = this::onTimeout;
         private boolean completed;
         private int requestId;
 
-        private SourceLoader(int account, SourceCallback callback) {
+        private SourceLoader(int account, int postLimit, SourceCallback callback) {
             this.account = account;
+            this.postLimit = postLimit;
             this.callback = callback;
         }
 
@@ -139,7 +151,7 @@ public final class AutoProxyController {
             peer.channel_id = chat.id;
             peer.access_hash = chat.access_hash;
             request.peer = peer;
-            request.limit = SOURCE_MESSAGE_LIMIT;
+            request.limit = postLimit;
             try {
                 requestId = AccountInstance.getInstance(account).getConnectionsManager().sendRequest(request, (response, error) ->
                         AndroidUtilities.runOnUIThread(() -> {
@@ -190,6 +202,7 @@ public final class AutoProxyController {
         private final int discovered;
         private final SharedConfig.ProxyInfo initialProxy;
         private final boolean initiallyEnabled;
+        private final boolean background;
         private final Callback callback;
         private int nextIndex;
         private int inFlight;
@@ -199,11 +212,12 @@ public final class AutoProxyController {
         private boolean completed;
 
         private CandidateChecker(int account, ArrayList<ProxySettings> settings, SharedConfig.ProxyInfo initialProxy,
-                                 boolean initiallyEnabled, Callback callback) {
+                                 boolean initiallyEnabled, boolean background, Callback callback) {
             this.account = account;
             this.discovered = settings.size();
             this.initialProxy = initialProxy;
             this.initiallyEnabled = initiallyEnabled;
+            this.background = background;
             this.callback = callback;
 
             ProxyController controller = ProxyController.getInstance();
@@ -296,6 +310,11 @@ public final class AutoProxyController {
         }
 
         private void applyResults() {
+            if (background && !IcegramConfig.isAutoProxyEnabled()) {
+                refreshInProgress.set(false);
+                callback.onComplete(new Result(true, discovered, checked, available, 0, false));
+                return;
+            }
             ProxyController controller = ProxyController.getInstance();
             boolean removeDead = IcegramConfig.isAutoProxyRemoveDeadEnabled();
             int maxPing = IcegramConfig.getAutoProxyMaxPing();
@@ -413,12 +432,14 @@ public final class AutoProxyController {
         return true;
     }
 
-    private static ArrayList<ProxySettings> extractProxies(ArrayList<TLRPC.Message> messages, int limit) {
+    private static ArrayList<ProxySettings> extractProxies(ArrayList<TLRPC.Message> messages, int postLimit) {
+        final int limit = MAX_DISCOVERED_PROXIES;
         LinkedHashMap<String, ProxySettings> unique = new LinkedHashMap<>();
         if (messages == null) {
             return new ArrayList<>();
         }
-        for (TLRPC.Message message : messages) {
+        for (int messageIndex = 0; messageIndex < Math.min(messages.size(), postLimit); messageIndex++) {
+            TLRPC.Message message = messages.get(messageIndex);
             if (message == null) {
                 continue;
             }

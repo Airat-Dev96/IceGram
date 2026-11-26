@@ -30,5 +30,7 @@ jobs:
         run: python3 Tools/icegram/test-ghost.py
       - name: Test message history SQL and privacy guards
         run: python3 Tools/icegram/test-history.py
+      - name: Test proxy sponsor visibility without transport changes
+        run: python3 Tools/icegram/test-sponsor.py
       - name: Test APK verification checks with fixtures
         run: python3 Tools/icegram/test-apk.py

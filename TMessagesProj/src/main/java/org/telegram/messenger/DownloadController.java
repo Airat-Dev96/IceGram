@@ -470,6 +470,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int getAutodownloadMask() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         int result = 0;
         int[] masksArray;
         int networkType = ApplicationLoader.getAutodownloadNetworkType();
@@ -509,6 +512,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     protected int getAutodownloadMaskAll() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         if (!mobilePreset.enabled && !roamingPreset.enabled && !wifiPreset.enabled) {
             return 0;
         }
@@ -608,6 +614,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public boolean canDownloadMedia(MessageObject messageObject) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return false;
+        }
         if (messageObject.type == MessageObject.TYPE_STORY) {
             if (!SharedConfig.isAutoplayVideo()) return false;
             TLRPC.TL_messageMediaStory mediaStory = (TLRPC.TL_messageMediaStory) MessageObject.getMedia(messageObject);
@@ -626,6 +635,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public boolean canDownloadMedia(int type, long size) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return false;
+        }
         Preset preset;
         int networkType = ApplicationLoader.getAutodownloadNetworkType();
         if (networkType == StatsController.TYPE_WIFI) {
@@ -651,6 +663,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int canDownloadMediaType(MessageObject messageObject) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         if (messageObject.type == MessageObject.TYPE_STORY) {
             if (!SharedConfig.isAutoplayVideo()) return 0;
             TLRPC.TL_messageMediaStory mediaStory = (TLRPC.TL_messageMediaStory) MessageObject.getMedia(messageObject);
@@ -669,6 +684,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int canDownloadMediaType(MessageObject messageObject, long overrideSize) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         if (messageObject.type == MessageObject.TYPE_STORY) {
             if (!SharedConfig.isAutoplayVideo()) return 0;
             TLRPC.TL_messageMediaStory mediaStory = (TLRPC.TL_messageMediaStory) MessageObject.getMedia(messageObject);
@@ -860,6 +878,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int canDownloadMedia(TLRPC.Message message) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         if (message == null || message.media instanceof TLRPC.TL_messageMediaStory) {
             return canPreloadStories() ? 2 : 0;
         }
@@ -941,6 +962,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int canDownloadMedia(TLRPC.Message message, TLRPC.MessageMedia media) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         if (message == null || media instanceof TLRPC.TL_messageMediaStory) {
             return canPreloadStories() ? 2 : 0;
         }
@@ -1023,6 +1047,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     protected boolean canDownloadNextTrack() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return false;
+        }
         if (UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
             return false;
         }
@@ -1037,6 +1064,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public int getCurrentDownloadMask() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return 0;
+        }
         int networkType = ApplicationLoader.getAutodownloadNetworkType();
         if (networkType == StatsController.TYPE_WIFI) {
             if (!wifiPreset.enabled) {
@@ -1069,6 +1099,10 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public void savePresetToServer(int type) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)
+                || UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
+            return;
+        }
         TL_account.saveAutoDownloadSettings req = new TL_account.saveAutoDownloadSettings();
         Preset preset;
         boolean enabled;
@@ -1749,6 +1783,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public boolean canPreloadStories() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
+            return false;
+        }
         if (UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
             return false;
         }
@@ -1778,7 +1815,8 @@ public class DownloadController extends BaseController implements NotificationCe
         UltraEconomySnapshot snapshot = new UltraEconomySnapshot("downloads_" + currentAccount + "_" + getUserConfig().getClientUserId());
         SharedPreferences preferences = MessagesController.getMainSettings(currentAccount);
         boolean power = UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER);
-        if (!power && !snapshot.isSaved()) {
+        boolean noDownloads = UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD);
+        if (!power && !noDownloads && !snapshot.isSaved()) {
             return;
         }
         HashMap<String, Object> defaults = new HashMap<>();
@@ -1791,7 +1829,7 @@ public class DownloadController extends BaseController implements NotificationCe
         defaults.put("currentMobilePreset", currentMobilePreset);
         defaults.put("currentWifiPreset", currentWifiPreset);
         defaults.put("currentRoamingPreset", currentRoamingPreset);
-        if (power && !snapshot.capture(preferences, defaults, "preset0", "preset1", "preset2", "mobilePreset", "wifiPreset", "roamingPreset",
+        if ((power || noDownloads) && !snapshot.capture(preferences, defaults, "preset0", "preset1", "preset2", "mobilePreset", "wifiPreset", "roamingPreset",
                 "currentMobilePreset", "currentWifiPreset", "currentRoamingPreset")) {
             return;
         }
@@ -1804,7 +1842,7 @@ public class DownloadController extends BaseController implements NotificationCe
         currentMobilePreset = snapshot.getInt("currentMobilePreset", currentMobilePreset);
         currentWifiPreset = snapshot.getInt("currentWifiPreset", currentWifiPreset);
         currentRoamingPreset = snapshot.getInt("currentRoamingPreset", currentRoamingPreset);
-        if (!power) {
+        if (!power && !noDownloads) {
             snapshot.restore(preferences, true);
             return;
         }
@@ -1812,6 +1850,10 @@ public class DownloadController extends BaseController implements NotificationCe
             preset.preloadVideo = false;
             preset.preloadMusic = false;
             preset.preloadStories = false;
+            if (noDownloads) {
+                preset.enabled = false;
+                java.util.Arrays.fill(preset.mask, 0);
+            }
         }
         preferences.edit().putString("preset0", lowPreset.toString()).putString("preset1", mediumPreset.toString())
                 .putString("preset2", highPreset.toString()).putString("mobilePreset", mobilePreset.toString())

@@ -11698,5 +11698,7 @@
     <string name="IcegramUltraOptions">Battery-saving options</string>
     <string name="IcegramUltraOptionsInfo">All options are selected each time you enable the mode. Turn any option off to restore its previous settings. Overlapping restrictions stay in effect while another selected option requires them. Static cached media may remain visible.</string>
     <string name="IcegramUltraNativePower">Telegram power saving</string>
+    <string name="IcegramUltraAutodownload">No automatic media downloads</string>
+    <string name="IcegramUltraAutodownloadInfo">Disable every media type on mobile data, Wi-Fi and roaming. Manual downloads and sending messages remain available.</string>
     <string name="IcegramUltraNativePowerInfo">Use the existing animations and power-saving settings: no video or GIF autoplay, sticker and emoji animation, interface effects or media preloading.</string>
 </resources>

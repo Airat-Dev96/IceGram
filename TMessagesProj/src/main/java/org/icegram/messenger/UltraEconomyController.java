@@ -14,7 +14,8 @@ import java.util.HashMap;
 
 public final class UltraEconomyController {
     public enum Option {
-        TELEGRAM_POWER(1, R.string.IcegramUltraNativePower, R.string.IcegramUltraNativePowerInfo);
+        TELEGRAM_POWER(1, R.string.IcegramUltraNativePower, R.string.IcegramUltraNativePowerInfo),
+        NO_AUTODOWNLOAD(1 << 1, R.string.IcegramUltraAutodownload, R.string.IcegramUltraAutodownloadInfo);
 
         public final int flag;
         public final int title;

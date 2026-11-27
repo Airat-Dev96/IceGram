@@ -23,6 +23,21 @@ def main():
     assert 'UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)' in lite_mode
     assert 'UltraEconomyController.filterLiteModeFlags' in lite_mode
 
+    downloads = (JAVA / "org/telegram/messenger/DownloadController.java").read_text()
+    for signature in ('public boolean canDownloadMedia(MessageObject messageObject)',
+                      'public boolean canDownloadMedia(int type, long size)',
+                      'public int canDownloadMediaType(MessageObject messageObject)',
+                      'public int canDownloadMediaType(MessageObject messageObject, long overrideSize)',
+                      'public int canDownloadMedia(TLRPC.Message message)',
+                      'public int canDownloadMedia(TLRPC.Message message, TLRPC.MessageMedia media)',
+                      'public int getAutodownloadMask()', 'protected int getAutodownloadMaskAll()',
+                      'public int getCurrentDownloadMask()', 'protected boolean canDownloadNextTrack()',
+                      'public boolean canPreloadStories()'):
+        body = downloads.split(signature, 1)[1]
+        assert body.lstrip().startswith('{\n        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD))'), signature
+    assert 'if (!power && !noDownloads)' in downloads
+    assert 'java.util.Arrays.fill(preset.mask, 0)' in downloads
+
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation
     assert 'fun floating(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

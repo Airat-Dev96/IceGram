@@ -231,7 +231,7 @@ def integration():
         check(request in ghost, f"Ghost Mode does not cover {request}")
     check("TL_sendMessageCancelAction" in ghost and "TL_messages_readEncryptedHistory" not in ghost,
           "Ghost Mode must keep typing cancellations and secret-chat read behavior intact")
-    check("GhostModeController.shouldSuppressRequest(object)" in text(java / "org/telegram/tgnet/ConnectionsManager.java"),
+    check("GhostModeController.shouldSuppressRequest(currentAccount, object)" in text(java / "org/telegram/tgnet/ConnectionsManager.java"),
           "Ghost Mode request filter is not connected to the network send path")
     check("!IcegramConfig.isOnlineHidden() && !ignoreSetOnline" in text(java / "org/telegram/messenger/MessagesController.java"),
           "The independent online toggle must prevent online status updates")

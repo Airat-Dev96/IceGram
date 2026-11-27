@@ -459,22 +459,36 @@ public class ConnectionsManager extends BaseController {
     public int sendRequestSync(final TLObject object, final RequestDelegate onComplete, final QuickAckDelegate onQuickAck, final WriteToSocketDelegate onWriteToSocket, final int flags, final int datacenterId, final int connectionType, final boolean immediate) {
         final int requestToken = lastRequestToken.getAndIncrement();
         sendRequestInternal(object, onComplete, null, onQuickAck, onWriteToSocket, flags, datacenterId, connectionType, immediate, requestToken,
-                GhostModeController.captureReadReceiptToken(), GhostModeController.captureStoryViewToken());
+                GhostModeController.captureReadReceiptToken(currentAccount, object), GhostModeController.captureStoryViewToken(currentAccount, object), false);
         return requestToken;
     }
 
     public int sendRequest(final TLObject object, final RequestDelegate onComplete, final RequestDelegateTimestamp onCompleteTimestamp, final QuickAckDelegate onQuickAck, final WriteToSocketDelegate onWriteToSocket, final int flags, final int datacenterId, final int connectionType, final boolean immediate) {
         final int requestToken = lastRequestToken.getAndIncrement();
-        final long ghostReadToken = GhostModeController.captureReadReceiptToken();
-        final long ghostStoryToken = GhostModeController.captureStoryViewToken();
+        final long ghostReadToken = GhostModeController.captureReadReceiptToken(currentAccount, object);
+        final long ghostStoryToken = GhostModeController.captureStoryViewToken(currentAccount, object);
         Utilities.stageQueue.postRunnable(() -> {
             sendRequestInternal(object, onComplete, onCompleteTimestamp, onQuickAck, onWriteToSocket, flags, datacenterId, connectionType, immediate, requestToken,
-                    ghostReadToken, ghostStoryToken);
+                    ghostReadToken, ghostStoryToken, false);
         });
         return requestToken;
     }
 
-    private void sendRequestInternal(TLObject object, RequestDelegate onComplete, RequestDelegateTimestamp onCompleteTimestamp, QuickAckDelegate onQuickAck, WriteToSocketDelegate onWriteToSocket, int flags, int datacenterId, int connectionType, boolean immediate, int requestToken, long ghostReadToken, long ghostStoryToken) {
+    public int sendRequestForGhostRead(TLObject object, RequestDelegate completionBlock) {
+        if (!(object instanceof TLRPC.TL_messages_readHistory)
+                && !(object instanceof TLRPC.TL_channels_readHistory)) {
+            return sendRequest(object, completionBlock);
+        }
+        final int requestToken = lastRequestToken.getAndIncrement();
+        final long ghostReadToken = GhostModeController.captureReadReceiptToken(currentAccount, object);
+        final long ghostStoryToken = GhostModeController.captureStoryViewToken();
+        Utilities.stageQueue.postRunnable(() -> sendRequestInternal(object, completionBlock, null, null, null,
+                0, DEFAULT_DATACENTER_ID, ConnectionTypeGeneric, true, requestToken,
+                ghostReadToken, ghostStoryToken, true));
+        return requestToken;
+    }
+
+    private void sendRequestInternal(TLObject object, RequestDelegate onComplete, RequestDelegateTimestamp onCompleteTimestamp, QuickAckDelegate onQuickAck, WriteToSocketDelegate onWriteToSocket, int flags, int datacenterId, int connectionType, boolean immediate, int requestToken, long ghostReadToken, long ghostStoryToken, boolean allowGhostReadReceipt) {
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("send request " + object + " with token = " + requestToken);
         }
@@ -499,8 +513,8 @@ public class ConnectionsManager extends BaseController {
             object = FeedRequestNormalizer.normalize(currentAccount, object);
 
             GhostModeController.applyRequestPrivacy(object);
-            if (GhostModeController.shouldSuppressRequest(object)
-                    || GhostModeController.shouldDiscardQueuedReceipt(object, ghostReadToken, ghostStoryToken)) {
+            if (!allowGhostReadReceipt && (GhostModeController.shouldSuppressRequest(currentAccount, object)
+                    || GhostModeController.shouldDiscardQueuedReceipt(currentAccount, object, ghostReadToken, ghostStoryToken))) {
                 TLRPC.TL_error ghostModeError = new TLRPC.TL_error();
                 ghostModeError.code = -1000;
                 ghostModeError.text = "GHOST_MODE_SUPPRESSED";

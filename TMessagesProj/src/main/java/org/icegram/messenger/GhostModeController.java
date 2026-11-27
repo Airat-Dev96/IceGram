@@ -2,6 +2,7 @@
 package org.icegram.messenger;
 
 import org.telegram.messenger.AccountInstance;
+import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLObject;
@@ -36,13 +37,77 @@ public final class GhostModeController {
         }
 
         if (request instanceof TLRPC.TL_messages_setEncryptedTyping) {
-            return IcegramConfig.isTypingHidden() && ((TLRPC.TL_messages_setEncryptedTyping) request).typing;
+            return false;
         }
 
         return false;
     }
 
-    private static boolean isCloudReadRequest(TLObject request) {
+    public static boolean shouldSuppressRequest(int account, TLObject request) {
+        if (isCloudReadRequest(request)) {
+            long dialogId = getReadDialogId(request);
+            return dialogId == 0 ? IcegramConfig.areReadReceiptsHidden()
+                    : areReadReceiptsHidden(account, dialogId);
+        }
+        long dialogId = getGhostExceptionDialogId(request);
+        if (dialogId != 0 && IcegramConfig.isGhostModeDisabledForDialog(account, dialogId)) {
+            return false;
+        }
+        return shouldSuppressRequest(request);
+    }
+
+    public static long getReadDialogId(TLObject request) {
+        if (request instanceof TLRPC.TL_messages_readHistory) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readHistory) request).peer);
+        }
+        if (request instanceof TLRPC.TL_channels_readHistory) {
+            TLRPC.InputChannel channel = ((TLRPC.TL_channels_readHistory) request).channel;
+            return channel == null ? 0 : -channel.channel_id;
+        }
+        if (request instanceof TLRPC.TL_messages_readMessageContents) {
+            return ((TLRPC.TL_messages_readMessageContents) request).icegramDialogId;
+        }
+        if (request instanceof TLRPC.TL_channels_readMessageContents) {
+            TLRPC.InputChannel channel = ((TLRPC.TL_channels_readMessageContents) request).channel;
+            return channel == null ? 0 : -channel.channel_id;
+        }
+        if (request instanceof TLRPC.TL_messages_readDiscussion) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readDiscussion) request).peer);
+        }
+        if (request instanceof TLRPC.TL_messages_readSavedHistory) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readSavedHistory) request).parent_peer);
+        }
+        if (request instanceof TLRPC.TL_messages_readMentions) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readMentions) request).peer);
+        }
+        if (request instanceof TLRPC.TL_messages_readReactions) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readReactions) request).peer);
+        }
+        if (request instanceof TLRPC.TL_messages_readPollVotes) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_readPollVotes) request).peer);
+        }
+        return 0;
+    }
+
+    private static long getGhostExceptionDialogId(TLObject request) {
+        if (request instanceof TLRPC.TL_messages_setTyping) {
+            return DialogObject.getPeerDialogId(((TLRPC.TL_messages_setTyping) request).peer);
+        }
+        if (request instanceof TL_stories.TL_stories_readStories) {
+            return DialogObject.getPeerDialogId(((TL_stories.TL_stories_readStories) request).peer);
+        }
+        if (request instanceof TL_stories.TL_stories_incrementStoryViews) {
+            return DialogObject.getPeerDialogId(((TL_stories.TL_stories_incrementStoryViews) request).peer);
+        }
+        return 0;
+    }
+
+    private static boolean areReadReceiptsHidden(int account, long dialogId) {
+        return IcegramConfig.areReadReceiptsHidden()
+                && !IcegramConfig.isGhostModeDisabledForDialog(account, dialogId);
+    }
+
+    public static boolean isCloudReadRequest(TLObject request) {
         return request instanceof TLRPC.TL_messages_readHistory
                 || request instanceof TLRPC.TL_channels_readHistory
                 || request instanceof TLRPC.TL_messages_readMessageContents
@@ -64,19 +129,57 @@ public final class GhostModeController {
         return IcegramConfig.areReadReceiptsHidden() ? -1 : generation;
     }
 
+    public static long captureReadReceiptToken(int account, long dialogId) {
+        long generation = readGeneration.get();
+        return areReadReceiptsHidden(account, dialogId) ? -1 : generation;
+    }
+
+    public static long captureReadReceiptToken(int account, TLObject request) {
+        return captureReadReceiptToken(account, getReadDialogId(request));
+    }
+
     public static long captureStoryViewToken() {
         long generation = storyGeneration.get();
         return IcegramConfig.areStoryViewsHidden() ? -1 : generation;
+    }
+
+    public static long captureStoryViewToken(int account, TLObject request) {
+        long dialogId = getGhostExceptionDialogId(request);
+        if (isStoryViewRequest(request) && dialogId != 0
+                && IcegramConfig.isGhostModeDisabledForDialog(account, dialogId)) {
+            return storyGeneration.get();
+        }
+        return captureStoryViewToken();
     }
 
     public static boolean isReadReceiptTokenValid(long token) {
         return token >= 0 && token == readGeneration.get() && !IcegramConfig.areReadReceiptsHidden();
     }
 
+    public static boolean isReadReceiptTokenValid(int account, long dialogId, long token) {
+        return token >= 0 && token == readGeneration.get()
+                && !areReadReceiptsHidden(account, dialogId);
+    }
+
     public static boolean shouldDiscardQueuedReceipt(TLObject request, long readToken, long storyToken) {
         return isCloudReadRequest(request) && !isReadReceiptTokenValid(readToken)
                 || isStoryViewRequest(request) && (storyToken < 0 || storyToken != storyGeneration.get()
                 || IcegramConfig.areStoryViewsHidden());
+    }
+
+    public static boolean shouldDiscardQueuedReceipt(int account, TLObject request, long readToken, long storyToken) {
+        long dialogId = getReadDialogId(request);
+        return isCloudReadRequest(request) && !(dialogId != 0
+                ? isReadReceiptTokenValid(account, dialogId, readToken)
+                : isReadReceiptTokenValid(readToken))
+                || isStoryViewRequest(request) && !isStoryViewTokenValid(account, request, storyToken);
+    }
+
+
+    private static boolean isStoryViewTokenValid(int account, TLObject request, long token) {
+        long dialogId = getGhostExceptionDialogId(request);
+        boolean excluded = dialogId != 0 && IcegramConfig.isGhostModeDisabledForDialog(account, dialogId);
+        return token >= 0 && token == storyGeneration.get() && (!IcegramConfig.areStoryViewsHidden() || excluded);
     }
 
     public static void applyRequestPrivacy(TLObject request) {

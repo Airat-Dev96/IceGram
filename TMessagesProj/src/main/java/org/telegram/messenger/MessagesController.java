@@ -14677,6 +14677,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 });
             } else {
                 TLRPC.TL_messages_readMessageContents req = new TLRPC.TL_messages_readMessageContents();
+                req.icegramDialogId = dialogId;
                 req.id.add(messageObject.getId());
                 getConnectionsManager().sendRequest(req, (response, error) -> {
                     if (error == null) {
@@ -14702,6 +14703,7 @@ public class MessagesController extends BaseController implements NotificationCe
             });
         } else {
             TLRPC.TL_messages_readMessageContents req = new TLRPC.TL_messages_readMessageContents();
+            req.icegramDialogId = did;
             req.id.add(mid);
             getConnectionsManager().sendRequest(req, (response, error) -> {
                 if (error == null) {
@@ -14780,6 +14782,7 @@ public class MessagesController extends BaseController implements NotificationCe
             });
         } else {
             TLRPC.TL_messages_readMessageContents req = new TLRPC.TL_messages_readMessageContents();
+            req.icegramDialogId = dialogId;
             req.id.add(mid);
             getConnectionsManager().sendRequest(req, (response, error) -> {
                 if (error == null) {
@@ -14817,7 +14820,7 @@ public class MessagesController extends BaseController implements NotificationCe
 
     private void completeReadTask(ReadTask task) {
         if (!DialogObject.isEncryptedDialog(task.dialogId)
-                && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+                && !GhostModeController.isReadReceiptTokenValid(currentAccount, task.dialogId, task.ghostReadToken)) {
             return;
         }
         if (task.replyId != 0 && task.monoForumPeerId == 0) {
@@ -14876,7 +14879,7 @@ public class MessagesController extends BaseController implements NotificationCe
         for (int index = readTasks.size() - 1; index >= 0; index--) {
             ReadTask task = readTasks.get(index);
             if (!DialogObject.isEncryptedDialog(task.dialogId)
-                    && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+                    && !GhostModeController.isReadReceiptTokenValid(currentAccount, task.dialogId, task.ghostReadToken)) {
                 readTasks.remove(index);
                 readTasksMap.remove(task.dialogId);
             }
@@ -14884,7 +14887,7 @@ public class MessagesController extends BaseController implements NotificationCe
         for (int index = repliesReadTasks.size() - 1; index >= 0; index--) {
             ReadTask task = repliesReadTasks.get(index);
             if (!DialogObject.isEncryptedDialog(task.dialogId)
-                    && !GhostModeController.isReadReceiptTokenValid(task.ghostReadToken)) {
+                    && !GhostModeController.isReadReceiptTokenValid(currentAccount, task.dialogId, task.ghostReadToken)) {
                 repliesReadTasks.remove(index);
                 threadsReadTasksMap.remove(task.dialogId + "_" + task.replyId);
             }
@@ -14940,6 +14943,31 @@ public class MessagesController extends BaseController implements NotificationCe
         });
     }
 
+    public void sendReadReceiptForGhostInteract(long dialogId, int maxId) {
+        if (dialogId == 0 || maxId <= 0 || DialogObject.isEncryptedDialog(dialogId)) {
+            return;
+        }
+        TLRPC.InputPeer inputPeer = getInputPeer(dialogId);
+        TLObject request;
+        if (inputPeer instanceof TLRPC.TL_inputPeerChannel) {
+            TLRPC.TL_channels_readHistory readHistory = new TLRPC.TL_channels_readHistory();
+            readHistory.channel = getInputChannel(-dialogId);
+            readHistory.max_id = maxId;
+            request = readHistory;
+        } else {
+            TLRPC.TL_messages_readHistory readHistory = new TLRPC.TL_messages_readHistory();
+            readHistory.peer = inputPeer;
+            readHistory.max_id = maxId;
+            request = readHistory;
+        }
+        getConnectionsManager().sendRequestForGhostRead(request, (response, error) -> {
+            if (error == null && response instanceof TLRPC.TL_messages_affectedMessages) {
+                TLRPC.TL_messages_affectedMessages affected = (TLRPC.TL_messages_affectedMessages) response;
+                processNewDifferenceParams(-1, affected.pts, -1, affected.pts_count);
+            }
+        });
+    }
+
     public void markMentionsAsRead(long dialogId, long topicId) {
         if (DialogObject.isEncryptedDialog(dialogId) || dialogId == getUserConfig().getClientUserId()) {
             return;
@@ -14955,7 +14983,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
-        final long ghostReadToken = GhostModeController.captureReadReceiptToken();
+        final long ghostReadToken = GhostModeController.captureReadReceiptToken(currentAccount, dialogId);
         boolean createReadTask;
 
         if (threadId != 0) {
@@ -15080,7 +15108,7 @@ public class MessagesController extends BaseController implements NotificationCe
         if (createReadTask) {
             Utilities.stageQueue.postRunnable(() -> {
                 if (!DialogObject.isEncryptedDialog(dialogId)
-                        && !GhostModeController.isReadReceiptTokenValid(ghostReadToken)) {
+                        && !GhostModeController.isReadReceiptTokenValid(currentAccount, dialogId, ghostReadToken)) {
                     return;
                 }
                 ReadTask currentReadTask;

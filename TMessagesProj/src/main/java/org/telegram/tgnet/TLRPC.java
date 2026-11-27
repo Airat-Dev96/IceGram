@@ -54039,6 +54039,7 @@ public class TLRPC {
     public static class TL_messages_readMessageContents extends TLObject {
         public static final int constructor = 0x36a73f77;
 
+        public long icegramDialogId;
         public ArrayList<Integer> id = new ArrayList<>();
 
         public TLObject deserializeResponse(InputSerializedData stream, int constructor, boolean exception) {

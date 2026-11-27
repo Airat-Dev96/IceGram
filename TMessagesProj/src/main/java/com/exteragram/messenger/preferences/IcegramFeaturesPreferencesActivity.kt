@@ -41,7 +41,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
         ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
         HIDE_PHONE, SAVE_BUTTON,
         MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY, HISTORY_EXCEPTIONS,
-        GHOST_QUICK, GHOST_OPTIONS, SILENT_SEND,
+        GHOST_QUICK, GHOST_OPTIONS, GHOST_EXCEPTIONS, READ_ON_SEND, SILENT_SEND,
         AUTO_PROXY,
         UPSTREAM, PLUGINS;
 
@@ -76,6 +76,10 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             GhostModeController.isEnabled(), getString(R.string.IcegramGhostQuickInfo)))
         items.add(uButton(Item.GHOST_OPTIONS, getString(R.string.IcegramGhostOptions),
             R.drawable.msg_settings, subtext = getString(R.string.AyugramGhostModeInfo)))
+        items.add(uButton(Item.GHOST_EXCEPTIONS, getString(R.string.IcegramGhostExceptions),
+            R.drawable.msg_settings, subtext = getString(R.string.IcegramGhostExceptionsInfo)))
+        items.add(uCheck(Item.READ_ON_SEND, getString(R.string.IcegramReadOnSend),
+            IcegramConfig.isReadOnSendEnabled(), getString(R.string.IcegramReadOnSendInfo)))
         items.add(uCheck(Item.SILENT_SEND, getString(R.string.IcegramSilentSend),
             IcegramConfig.isSilentSendEnabled(), getString(R.string.IcegramSilentSendInfo)))
         items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),

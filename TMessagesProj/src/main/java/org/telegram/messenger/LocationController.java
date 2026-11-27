@@ -951,6 +951,7 @@ public class LocationController extends BaseController implements NotificationCe
             request = req;
         } else {
             TLRPC.TL_messages_readMessageContents req = new TLRPC.TL_messages_readMessageContents();
+            req.icegramDialogId = dialogId;
             for (int a = 0, N = messages.size(); a < N; a++) {
                 req.id.add(messages.get(a).id);
             }

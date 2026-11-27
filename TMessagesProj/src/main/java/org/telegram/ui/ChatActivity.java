@@ -194,6 +194,7 @@ import com.exteragram.messenger.utils.system.VibratorUtils;
 import com.google.zxing.common.detector.MathUtils;
 
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.icegram.messenger.IcegramConfig;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -1953,6 +1954,7 @@ public class ChatActivity extends BaseFragment implements
 
     private final static int chat_menu_topic_create = 73;
     private final static int chat_menu_topics_panel = 75;
+    private final static int ghost_read_now = 76;
 
     private final static int permissions = 90;
     private final static int administrators = 91;
@@ -2395,6 +2397,9 @@ public class ChatActivity extends BaseFragment implements
 
         @Override
         public void onMessageSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
+            if (scheduleDate == 0 && IcegramConfig.isReadOnSendEnabled() && currentEncryptedChat == null) {
+                getMessagesController().sendReadReceiptForGhostInteract(dialog_id, getLatestIncomingMessageId());
+            }
             if (chatListItemAnimator != null) {
                 chatActivityEnterViewAnimateFromTop = chatActivityEnterView.getBackgroundTop();
                 if (chatActivityEnterViewAnimateFromTop != 0) {
@@ -4289,6 +4294,8 @@ public class ChatActivity extends BaseFragment implements
                         return;
                     }
                     showDialog(AlertsCreator.createTTLAlert(getParentActivity(), currentEncryptedChat, themeDelegate).create());
+                } else if (id == ghost_read_now) {
+                    getMessagesController().sendReadReceiptForGhostInteract(dialog_id, getLatestIncomingMessageId());
                 } else if (id == clear_history || id == delete_chat || id == auto_delete_timer) {
                     if (getParentActivity() == null) {
                         return;
@@ -4884,6 +4891,9 @@ public class ChatActivity extends BaseFragment implements
             if (!isTopic && !ChatObject.isMonoForum(currentChat)) {
                 clearHistoryItem = headerItem.lazilyAddSubItem(clear_history, R.drawable.msg_clear,
                     LocaleController.getString(UserObject.isBotForum(currentUser) ? R.string.ClearAllHistory : R.string.ClearHistory));
+            }
+            if (currentEncryptedChat == null && !isReport()) {
+                headerItem.lazilyAddSubItem(ghost_read_now, R.drawable.msg_markread, getString(R.string.IcegramReadNow));
             }
             boolean addedSettings = false;
             if (!isTopic) {

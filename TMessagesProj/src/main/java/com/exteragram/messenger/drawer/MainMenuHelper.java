@@ -29,6 +29,7 @@ import com.exteragram.messenger.plugins.hooks.MenuItemRecord;
 import com.exteragram.messenger.plugins.ui.PluginsActivity;
 import com.exteragram.messenger.plugins.utils.MenuContextBuilder;
 import com.exteragram.messenger.utils.chats.ChatUtils;
+import org.icegram.messenger.GhostModeController;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.BuildVars;
@@ -137,6 +138,12 @@ public class MainMenuHelper {
         var fragment = menuContext.fragment();
 
         return switch (item) {
+            case GHOST -> new MenuItemInfo(
+                    GhostModeController.isEnabled() ? R.drawable.ic_ghost_on : R.drawable.ic_ghost_off,
+                    getString(R.string.AyugramGhostMode),
+                    () -> GhostModeController.setEnabled(!GhostModeController.isEnabled()),
+                    null
+            );
             case WALLET -> MessagesController.getInstance(currentAccount).config.walletAvailable.get()
                     ? new MenuItemInfo(R.drawable.ic_gram, getString(R.string.WalletTitle), () -> {
                         var walletActivity = new WalletActivity();

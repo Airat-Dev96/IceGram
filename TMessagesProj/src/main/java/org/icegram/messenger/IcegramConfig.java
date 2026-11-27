@@ -24,6 +24,8 @@ public final class IcegramConfig {
     private static volatile Boolean hideStoryViews;
     private static volatile Boolean silentSend;
     private static volatile Boolean messageHistoryEnabled;
+    private static volatile Boolean readOnSend;
+    private static volatile Boolean hideChannelSponsoredMessages;
 
     private IcegramConfig() {
     }
@@ -121,6 +123,64 @@ public final class IcegramConfig {
     public static void setReadReceiptsHidden(boolean enabled) {
         preferences().edit().putBoolean("icegram_hide_read_receipts", enabled).apply();
         hideReadReceipts = enabled;
+    }
+
+    public static boolean isGhostModeDisabledForDialog(int account, long dialogId) {
+        if (dialogId == 0 || org.telegram.messenger.DialogObject.isEncryptedDialog(dialogId)) {
+            return false;
+        }
+        return preferences().getStringSet(ghostExceptionsKey(account), Collections.emptySet())
+                .contains(Long.toString(dialogId));
+    }
+
+    private static String ghostExceptionsKey(int account) {
+        return "ghost_excluded_dialogs_" + UserConfig.getInstance(account).getClientUserId();
+    }
+
+    public static Set<Long> getGhostModeExcludedDialogs(int account) {
+        Set<Long> result = new HashSet<>();
+        for (String value : preferences().getStringSet(ghostExceptionsKey(account), Collections.emptySet())) {
+            try {
+                long dialogId = Long.parseLong(value);
+                if (dialogId != 0) {
+                    result.add(dialogId);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return result;
+    }
+
+    public static synchronized void setGhostModeExcluded(int account, long dialogId, boolean excluded) {
+        if (dialogId == 0 || org.telegram.messenger.DialogObject.isEncryptedDialog(dialogId)) {
+            return;
+        }
+        String key = ghostExceptionsKey(account);
+        Set<String> values = new HashSet<>(preferences().getStringSet(key, Collections.emptySet()));
+        if (excluded) {
+            values.add(Long.toString(dialogId));
+        } else {
+            values.remove(Long.toString(dialogId));
+        }
+        preferences().edit().putStringSet(key, values).apply();
+    }
+
+    public static boolean isReadOnSendEnabled() {
+        Boolean enabled = readOnSend;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = readOnSend;
+                if (enabled == null) {
+                    readOnSend = enabled = preferences().getBoolean("icegram_read_on_send", false);
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static void setReadOnSendEnabled(boolean enabled) {
+        preferences().edit().putBoolean("icegram_read_on_send", enabled).apply();
+        readOnSend = enabled;
     }
 
     public static boolean areStoryViewsHidden() {

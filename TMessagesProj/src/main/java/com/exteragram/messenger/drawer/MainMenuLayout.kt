@@ -39,7 +39,8 @@ enum class MainMenuItem(val id: Int) {
     BROWSER(101),
     QR(17),
     FEED(106),
-    WALLET(107);
+    WALLET(107),
+    GHOST(108);
 
     companion object {
         @JvmStatic fun getById(id: Int): MainMenuItem? = entries.find { it.id == id }
@@ -95,6 +96,12 @@ internal fun loadMainMenuLayout() {
         saveMainMenuLayout()
     }
 
+    val ghostId = MainMenuItem.GHOST.id
+    if (!mainMenuLayout.contains(ghostId) && !mainMenuHiddenItems.contains(ghostId)) {
+        mainMenuLayout.add(0, ghostId)
+        saveMainMenuLayout()
+    }
+
     mainMenuLayout.removeAll(mainMenuHiddenItems.toSet())
     ensureSettingsVisibility()
     sanitizeMenu()
@@ -108,6 +115,7 @@ fun saveMainMenuLayout() {
 
 fun getDefaultMainMenuLayout(): ArrayList<Int> = ArrayList<Int>().apply {
     add(MainMenuItem.ARCHIVE.id)
+    add(MainMenuItem.GHOST.id)
     addIf(hidden(), MainMenuItem.PROFILE.id)
     add(MainMenuItem.NEW_GROUP.id)
     addIf(hidden(), MainMenuItem.CONTACTS.id)

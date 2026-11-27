@@ -28900,6 +28900,18 @@ public class ChatActivity extends BaseFragment implements
         return sponsoredMessagesCount;
     }
 
+    private int getLatestIncomingMessageId() {
+        int maxId = 0;
+        for (MessageObject message : messages) {
+            if (message != null && message.messageOwner != null && message.getDialogId() == dialog_id
+                    && !message.isOutOwner()
+                    && !message.isSponsored() && message.getId() > maxId) {
+                maxId = message.getId();
+            }
+        }
+        return maxId;
+    }
+
     private void processDeletedMessages(ArrayList<Integer> markAsDeletedMessages, long channelId, boolean sent) {
         processDeletedMessages(markAsDeletedMessages, channelId, sent, true);
     }

@@ -17,7 +17,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.utils.glass.GlassEngine;
-import org.icegram.messenger.IcegramConfig;
+import org.icegram.messenger.UltraEconomyController;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -108,7 +108,7 @@ public class LiteMode {
     }
 
     public static int getValue(boolean ignorePowerSaving) {
-        if (!ignorePowerSaving && IcegramConfig.isUltraEconomyModeEnabled()) {
+        if (!ignorePowerSaving && UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
             return PRESET_POWER_SAVER;
         }
         if (!loaded) {
@@ -132,7 +132,7 @@ public class LiteMode {
                 onPowerSaverApplied(lastPowerSaverApplied = false);
             }
         }
-        return value;
+        return ignorePowerSaving ? value : UltraEconomyController.filterLiteModeFlags(value);
     }
 
     private static final long BATTERY_LEVEL_QUERY_INTERVAL = 60 * 1000;
@@ -220,7 +220,7 @@ public class LiteMode {
     }
 
     public static boolean isEnabled(int flag) {
-        if (IcegramConfig.isUltraEconomyModeEnabled()) {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
             return false;
         }
         if (flag == FLAG_CHAT_FORUM_TWOCOLUMN && AndroidUtilities.isTablet()) {
@@ -244,9 +244,9 @@ public class LiteMode {
 
     public static void setAllFlags(int flags) {
         int previous = getValue(true);
-        value = flags;
+        value = UltraEconomyController.filterLiteModeFlags(flags);
         savePreference();
-        onFlagsUpdate(previous, flags);
+        onFlagsUpdate(previous, value);
     }
 
     public static void updatePresets(TLRPC.TL_jsonObject json) {

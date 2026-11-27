@@ -290,7 +290,7 @@ def integration():
     check("IcegramProxyAutoBadge" in text(java / "org/telegram/ui/ProxyListActivity.java"),
           "Automatic proxies need a visible localized label")
     check("int defaultValue = 0," in lite and 'getBoolean("lite_mode_battery_follow_system", true)' in lite, "Wrong Ice Mode defaults")
-    check("oldValue ^ newValue" in lite and "onFlagsUpdate(previous, flags)" in lite, "Effects must refresh when Ice Mode changes")
+    check("oldValue ^ newValue" in lite and "onFlagsUpdate(previous, value)" in lite, "Effects must refresh when Ice Mode changes")
     updater = text(java / "com/exteragram/messenger/updater/UpdaterUtils.java")
     update_body = updater.split("public static void getAppUpdate(", 1)[1].split("private static", 1)[0]
     check("ICEGRAM_UPDATER_DISABLED" in update_body and "sendRequest" not in update_body

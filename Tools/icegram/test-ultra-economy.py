@@ -1,5 +1,9 @@
 """Verify the ultra-economy mode remains reversible and text-focused."""
 from pathlib import Path
+import re
+import subprocess
+import tempfile
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 JAVA = ROOT / "TMessagesProj/src/main/java"
@@ -8,13 +12,16 @@ JAVA = ROOT / "TMessagesProj/src/main/java"
 def main():
     config = (JAVA / "org/icegram/messenger/IcegramConfig.java").read_text()
     assert 'getBoolean("ultra_economy_mode", false)' in config
-    assert 'putBoolean("ultra_economy_previous_view_animations", globalPreferences.getBoolean("view_animations", true))' in config
-    assert 'remove("ultra_economy_previous_view_animations")' in config
-    assert 'putBoolean("view_animations", previousAnimations)' in config
+    assert 'UltraEconomyController.setEnabled(enabled)' in config
+    controller = (JAVA / "org/icegram/messenger/UltraEconomyController.java").read_text()
+    assert 'optionMask = allOptions()' in controller
+    assert 'snapshot.capture(main, defaults, "lite_mode6", "view_animations")' in controller
+    assert 'snapshot.restore(main, true)' in controller
+    assert 'ultra_economy_previous_view_animations' in controller
 
     lite_mode = (JAVA / "org/telegram/messenger/LiteMode.java").read_text()
-    assert 'if (!ignorePowerSaving && IcegramConfig.isUltraEconomyModeEnabled())' in lite_mode
-    assert 'if (IcegramConfig.isUltraEconomyModeEnabled()) {\n            return false;' in lite_mode
+    assert 'UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)' in lite_mode
+    assert 'UltraEconomyController.filterLiteModeFlags' in lite_mode
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation
@@ -25,8 +32,10 @@ def main():
     assert 'IcegramConfig.isUltraEconomyModeEnabled()' in drawer
 
     settings = (JAVA / "com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt").read_text()
-    assert 'IcegramConfig.setUltraEconomyModeEnabled(it)' in settings
-    assert 'IcegramConfig.isUltraEconomyModeEnabled()' in settings
+    assert 'presentFragment(UltraEconomyPreferencesActivity())' in settings
+    options = (JAVA / "com/exteragram/messenger/preferences/UltraEconomyPreferencesActivity.kt").read_text()
+    assert 'UltraEconomyController.Option.values()' in options
+    assert 'UltraEconomyController.setSelected' in options
 
     chat = (JAVA / "org/telegram/ui/ChatActivity.java").read_text()
     assert 'chatActivityEnterView.setUltraEconomyMode(IcegramConfig.isUltraEconomyModeEnabled())' in chat
@@ -35,12 +44,26 @@ def main():
     assert 'ultraEconomyMode && visibility == VISIBLE ? GONE : visibility' in composer
     assert 'ultraEconomyMode ? View.GONE : View.VISIBLE' in composer
     assert 'ultraEconomyMode && contentType == POPUP_CONTENT_BOT_KEYBOARD' in composer
+    send_container = composer.split('sendButtonContainer = new FrameLayout(context)', 1)[1].split('sendButton =', 1)[0]
+    assert 'ultraEconomyMode && visibility' not in send_container
+    mode_setter = composer.split('public void setUltraEconomyMode(boolean enabled)', 1)[1].split('private boolean isLiveComment', 1)[0]
+    assert 'sendButtonContainer.setVisibility' not in mode_setter
+    assert 'sendButton.setVisibility' not in mode_setter
 
-    for resource in ("values/icegram.xml", "values-ru/icegram.xml"):
-        strings = (ROOT / "TMessagesProj/src/main/res" / resource).read_text()
-        assert 'name="IcegramUltraEconomy"' in strings
-        assert 'name="IcegramUltraEconomyInfo"' in strings
-    print("PASS: ultra-economy defaults off, restores animations, and keeps chat/settings access")
+    localized = []
+    for resource in ("values/strings.xml", "values-ru/strings.xml"):
+        strings = ET.parse(ROOT / "TMessagesProj/src/main/res" / resource).getroot()
+        localized.append({item.get('name') for item in strings if (item.get('name') or '').startswith('IcegramUltra')})
+    assert localized[0] == localized[1]
+    for name in re.findall(r'R.string.(IcegramUltra\w+)', controller):
+        assert name in localized[0], name
+    fixtures = list((ROOT / "Tools/icegram/ultra-fixtures").rglob('*.java'))
+    with tempfile.TemporaryDirectory() as output:
+        subprocess.run(['javac', '-encoding', 'UTF-8', '-d', output, *map(str, fixtures),
+                        str(JAVA / 'org/icegram/messenger/UltraEconomySnapshot.java'),
+                        str(ROOT / 'Tools/icegram/UltraEconomySnapshotTest.java')], check=True)
+        subprocess.run(['java', '-cp', output, 'UltraEconomySnapshotTest'], check=True)
+    print("PASS: independent ultra-economy options, reversible settings, localization and send-button safety")
 
 
 if __name__ == "__main__":

@@ -47,8 +47,6 @@
     <string name="AyugramMessageHistoryClearConfirm">Удалить всю локально сохранённую историю сообщений для этого аккаунта?</string>
     <string name="AyugramMessageHistoryCancel">Отмена</string>
     <string name="IcegramPerformance">Быстродействие</string>
-    <string name="IcegramUltraEconomy">Режим ультраэкономии</string>
-    <string name="IcegramUltraEconomyInfo">Текстовый режим: отключает анимации и автозапуск, скрывает основные вкладки и лишние пункты меню, убирает отправку медиа, эмодзи и запись из поля ввода. Уже полученные изображения могут оставаться видимыми. Настройки доступны; при выключении восстанавливается прежняя настройка анимации.</string>
     <string name="IcegramApplyPreset">Применить Ice Mode</string>
     <string name="IcegramPresetInfo">Отключить необязательные анимации, размытие и автозапуск GIF и видео. Отдельные эффекты можно настроить ниже.</string>
     <string name="IcegramClassicInterface">Включить классический интерфейс</string>

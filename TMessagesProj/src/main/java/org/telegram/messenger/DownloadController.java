@@ -29,6 +29,8 @@ import org.telegram.tgnet.tl.TL_account;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.LaunchActivity;
+import org.icegram.messenger.UltraEconomyController;
+import org.icegram.messenger.UltraEconomySnapshot;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -529,6 +531,7 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public void checkAutodownloadSettings() {
+        applyUltraEconomySettings();
         int currentMask = getCurrentDownloadMask();
         if (currentMask == lastCheckMask) {
             return;
@@ -766,7 +769,7 @@ public class DownloadController extends BaseController implements NotificationCe
         } else {
             size = MessageObject.getMessageSize(msg);
         }
-        if (isVideo && preset.preloadVideo && size > maxSize && maxSize > 2 * 1024 * 1024) {
+        if (isVideo && preset.preloadVideo && !UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER) && size > maxSize && maxSize > 2 * 1024 * 1024) {
             return (mask & type) != 0 ? 2 : 0;
         } else {
             return (type == AUTODOWNLOAD_TYPE_PHOTO || size != 0 && size <= maxSize) && (type == AUTODOWNLOAD_TYPE_AUDIO || (mask & type) != 0) ? 1 : 0;
@@ -849,7 +852,7 @@ public class DownloadController extends BaseController implements NotificationCe
             maxSize = preset.sizes[typeToIndex(type)];
         }
         final long size = overrideSize;
-        if (isVideo && preset.preloadVideo && size > maxSize && maxSize > 2 * 1024 * 1024) {
+        if (isVideo && preset.preloadVideo && !UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER) && size > maxSize && maxSize > 2 * 1024 * 1024) {
             return (mask & type) != 0 ? 2 : 0;
         } else {
             return (type == AUTODOWNLOAD_TYPE_PHOTO || size != 0 && size <= maxSize) && (type == AUTODOWNLOAD_TYPE_AUDIO || (mask & type) != 0) ? 1 : 0;
@@ -930,7 +933,7 @@ public class DownloadController extends BaseController implements NotificationCe
             maxSize = preset.sizes[typeToIndex(type)];
         }
         long size = MessageObject.getMessageSize(message);
-        if (isVideo && preset.preloadVideo && size > maxSize && maxSize > 2 * 1024 * 1024) {
+        if (isVideo && preset.preloadVideo && !UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER) && size > maxSize && maxSize > 2 * 1024 * 1024) {
             return (mask & type) != 0 ? 2 : 0;
         } else {
             return (type == AUTODOWNLOAD_TYPE_PHOTO || size != 0 && size <= maxSize) && (type == AUTODOWNLOAD_TYPE_AUDIO || (mask & type) != 0) ? 1 : 0;
@@ -1012,7 +1015,7 @@ public class DownloadController extends BaseController implements NotificationCe
             maxSize = preset.sizes[typeToIndex(type)];
         }
         long size = MessageObject.getMediaSize(media);
-        if (isVideo && preset.preloadVideo && size > maxSize && maxSize > 2 * 1024 * 1024) {
+        if (isVideo && preset.preloadVideo && !UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER) && size > maxSize && maxSize > 2 * 1024 * 1024) {
             return (mask & type) != 0 ? 2 : 0;
         } else {
             return (type == AUTODOWNLOAD_TYPE_PHOTO || size != 0 && size <= maxSize) && (type == AUTODOWNLOAD_TYPE_AUDIO || (mask & type) != 0) ? 1 : 0;
@@ -1020,6 +1023,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     protected boolean canDownloadNextTrack() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
+            return false;
+        }
         int networkType = ApplicationLoader.getAutodownloadNetworkType();
         if (networkType == StatsController.TYPE_WIFI) {
             return wifiPreset.enabled && getCurrentWiFiPreset().preloadMusic;
@@ -1743,6 +1749,9 @@ public class DownloadController extends BaseController implements NotificationCe
     }
 
     public boolean canPreloadStories() {
+        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER)) {
+            return false;
+        }
         Preset preset;
         int networkType = ApplicationLoader.getAutodownloadNetworkType();
         if (networkType == StatsController.TYPE_WIFI) {
@@ -1763,5 +1772,49 @@ public class DownloadController extends BaseController implements NotificationCe
             preset = getCurrentMobilePreset();
         }
         return preset.preloadStories;
+    }
+
+    private void applyUltraEconomySettings() {
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("downloads_" + currentAccount + "_" + getUserConfig().getClientUserId());
+        SharedPreferences preferences = MessagesController.getMainSettings(currentAccount);
+        boolean power = UltraEconomyController.isEnabled(UltraEconomyController.Option.TELEGRAM_POWER);
+        if (!power && !snapshot.isSaved()) {
+            return;
+        }
+        HashMap<String, Object> defaults = new HashMap<>();
+        defaults.put("preset0", lowPreset.toString());
+        defaults.put("preset1", mediumPreset.toString());
+        defaults.put("preset2", highPreset.toString());
+        defaults.put("mobilePreset", mobilePreset.toString());
+        defaults.put("wifiPreset", wifiPreset.toString());
+        defaults.put("roamingPreset", roamingPreset.toString());
+        defaults.put("currentMobilePreset", currentMobilePreset);
+        defaults.put("currentWifiPreset", currentWifiPreset);
+        defaults.put("currentRoamingPreset", currentRoamingPreset);
+        if (power && !snapshot.capture(preferences, defaults, "preset0", "preset1", "preset2", "mobilePreset", "wifiPreset", "roamingPreset",
+                "currentMobilePreset", "currentWifiPreset", "currentRoamingPreset")) {
+            return;
+        }
+        lowPreset = new Preset(snapshot.getString("preset0", lowPreset.toString()), lowPreset.toString());
+        mediumPreset = new Preset(snapshot.getString("preset1", mediumPreset.toString()), mediumPreset.toString());
+        highPreset = new Preset(snapshot.getString("preset2", highPreset.toString()), highPreset.toString());
+        mobilePreset = new Preset(snapshot.getString("mobilePreset", mobilePreset.toString()), mobilePreset.toString());
+        wifiPreset = new Preset(snapshot.getString("wifiPreset", wifiPreset.toString()), wifiPreset.toString());
+        roamingPreset = new Preset(snapshot.getString("roamingPreset", roamingPreset.toString()), roamingPreset.toString());
+        currentMobilePreset = snapshot.getInt("currentMobilePreset", currentMobilePreset);
+        currentWifiPreset = snapshot.getInt("currentWifiPreset", currentWifiPreset);
+        currentRoamingPreset = snapshot.getInt("currentRoamingPreset", currentRoamingPreset);
+        if (!power) {
+            snapshot.restore(preferences, true);
+            return;
+        }
+        for (Preset preset : new Preset[]{lowPreset, mediumPreset, highPreset, mobilePreset, wifiPreset, roamingPreset}) {
+            preset.preloadVideo = false;
+            preset.preloadMusic = false;
+            preset.preloadStories = false;
+        }
+        preferences.edit().putString("preset0", lowPreset.toString()).putString("preset1", mediumPreset.toString())
+                .putString("preset2", highPreset.toString()).putString("mobilePreset", mobilePreset.toString())
+                .putString("wifiPreset", wifiPreset.toString()).putString("roamingPreset", roamingPreset.toString()).apply();
     }
 }

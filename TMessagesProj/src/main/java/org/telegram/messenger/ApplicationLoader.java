@@ -283,6 +283,7 @@ public class ApplicationLoader extends Application implements Provider {
             ContactsController.getInstance(a).checkAppAccount();
             DownloadController.getInstance(a);
         }
+        org.icegram.messenger.UltraEconomyController.initialize();
         BillingController.getInstance().startConnection();
         // icegram: widgets remain available, but skip their idle process on startup by default.
         if (!org.icegram.messenger.IcegramConfig.isLazyWidgetsEnabled()) {

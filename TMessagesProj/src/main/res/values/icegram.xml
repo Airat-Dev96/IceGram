@@ -48,8 +48,6 @@ Saved: %5$s
     <string name="AyugramMessageHistoryClearConfirm">Delete all locally saved message history for this account?</string>
     <string name="AyugramMessageHistoryCancel">Cancel</string>
     <string name="IcegramPerformance">Performance</string>
-    <string name="IcegramUltraEconomy">Ultra economy mode</string>
-    <string name="IcegramUltraEconomyInfo">Text-first mode: disables animations and autoplay, hides main tabs and non-chat drawer shortcuts, and removes media, emoji and recording controls from the composer. Static received media may still be visible. Settings remain available; switching off restores the previous animation setting.</string>
     <string name="IcegramApplyPreset">Apply Ice Mode</string>
     <string name="IcegramPresetInfo">Turn off optional animations, blur and autoplay for GIFs and videos. Change individual effects below.</string>
     <string name="IcegramClassicInterface">Apply classic interface</string>

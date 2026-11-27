@@ -52,8 +52,8 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
 
     override fun fillItems(items: ArrayList<UItem>, adapter: UniversalAdapter) {
         items.add(UItem.asHeader(getString(R.string.IcegramPerformance)))
-        items.add(uCheck(Item.ULTRA_ECONOMY, getString(R.string.IcegramUltraEconomy),
-            IcegramConfig.isUltraEconomyModeEnabled(), getString(R.string.IcegramUltraEconomyInfo)))
+        items.add(uButton(Item.ULTRA_ECONOMY, getString(R.string.IcegramUltraEconomy),
+            R.drawable.settings_power, subtext = getString(R.string.IcegramUltraEconomyInfo)))
         items.add(uButton(Item.ICE_PRESET, getString(R.string.IcegramApplyPreset),
             R.drawable.msg_settings, subtext = getString(R.string.IcegramPresetInfo)))
         items.add(uButton(Item.CLASSIC_INTERFACE, getString(R.string.IcegramClassicInterface),
@@ -112,7 +112,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
 
     override fun onClick(item: UItem, view: View, position: Int, x: Float, y: Float) {
         when (item.id) {
-            Item.ULTRA_ECONOMY.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setUltraEconomyModeEnabled(it) }
+            Item.ULTRA_ECONOMY.id -> presentFragment(UltraEconomyPreferencesActivity())
             Item.ICE_PRESET.id -> {
                 LiteMode.setAllFlags(0)
                 LiteMode.setPowerSaverFollowSystem(true)

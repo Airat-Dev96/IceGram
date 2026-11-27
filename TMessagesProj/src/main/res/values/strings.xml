@@ -11693,4 +11693,10 @@
     <string name="FpnvConsentSimSlot">SIM Slot</string>
     <string name="FpnvConsentSimSlotValue">SIM %1$d</string>
     <string name="FpnvConsentPhoneNumber">Phone Number</string>
+    <string name="IcegramUltraEconomy">Ultra economy mode</string>
+    <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
+    <string name="IcegramUltraOptions">Battery-saving options</string>
+    <string name="IcegramUltraOptionsInfo">All options are selected each time you enable the mode. Turn any option off to restore its previous settings. Overlapping restrictions stay in effect while another selected option requires them. Static cached media may remain visible.</string>
+    <string name="IcegramUltraNativePower">Telegram power saving</string>
+    <string name="IcegramUltraNativePowerInfo">Use the existing animations and power-saving settings: no video or GIF autoplay, sticker and emoji animation, interface effects or media preloading.</string>
 </resources>

@@ -276,4 +276,10 @@
     <string name="RemindTodayAt">\'Отправить сегодня в\' HH:mm</string>
     <string name="RemindDayAt">\'Отправить\' d MMM \'в\' HH:mm</string>
     <string name="RemindDayYearAt">\'Напомнить\' d MMM yyyy \'в\' HH:mm</string>
+    <string name="IcegramUltraEconomy">Режим ультраэкономии</string>
+    <string name="IcegramUltraEconomyInfo">Текстовый интерфейс с дополнительными ограничениями ради батареи. Сообщения, звонки и уведомления о новых сообщениях остаются включены. Экономия зависит от устройства, экрана и использования и не гарантируется. При выключении восстанавливаются настройки, сохранённые перед применением режима.</string>
+    <string name="IcegramUltraOptions">Параметры экономии</string>
+    <string name="IcegramUltraOptionsInfo">При каждом включении режима выбраны все пункты. Отключите любой, чтобы вернуть его прежние настройки. Общие ограничения действуют, пока они нужны другому включённому пункту. Статические медиа из кэша могут оставаться видимыми.</string>
+    <string name="IcegramUltraNativePower">Штатная экономия Telegram</string>
+    <string name="IcegramUltraNativePowerInfo">Использовать существующие настройки анимаций и энергосбережения: без автоплея видео и GIF, анимаций стикеров и эмодзи, эффектов интерфейса и предзагрузки медиа.</string>
 </resources>

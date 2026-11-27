@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.UserConfig;
 
 import java.util.Collections;
@@ -69,28 +68,12 @@ public final class IcegramConfig {
         return enabled;
     }
 
-    public static synchronized void setUltraEconomyModeEnabled(boolean enabled) {
-        SharedPreferences preferences = preferences();
-        boolean previous = preferences.getBoolean("ultra_economy_mode", false);
-        if (previous == enabled) {
-            ultraEconomyModeEnabled = enabled;
-            return;
-        }
-        SharedPreferences globalPreferences = MessagesController.getGlobalMainSettings();
-        if (enabled) {
-            preferences.edit()
-                    .putBoolean("ultra_economy_previous_view_animations", globalPreferences.getBoolean("view_animations", true))
-                    .putBoolean("ultra_economy_mode", true)
-                    .apply();
-            globalPreferences.edit().putBoolean("view_animations", false).apply();
-        } else {
-            boolean previousAnimations = preferences.getBoolean("ultra_economy_previous_view_animations", true);
-            preferences.edit()
-                    .putBoolean("ultra_economy_mode", false)
-                    .remove("ultra_economy_previous_view_animations")
-                    .apply();
-            globalPreferences.edit().putBoolean("view_animations", previousAnimations).apply();
-        }
+    public static void setUltraEconomyModeEnabled(boolean enabled) {
+        UltraEconomyController.setEnabled(enabled);
+    }
+
+    static void storeUltraEconomyModeEnabled(boolean enabled) {
+        preferences().edit().putBoolean("ultra_economy_mode", enabled).commit();
         ultraEconomyModeEnabled = enabled;
     }
 

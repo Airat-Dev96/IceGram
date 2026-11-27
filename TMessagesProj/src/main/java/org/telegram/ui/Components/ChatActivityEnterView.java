@@ -689,6 +689,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     public FrameLayout textFieldContainer;
     public FrameLayout sendButtonContainer;
     private ImageView sendOutlineView;
+    private boolean ultraEconomyMode;
     public RichMessageLayout.PreviewView richDraftPreview;
     private boolean richDraftActive;
     private TL_iv.RichMessage richDraftMessage;
@@ -2951,6 +2952,11 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             attachButton = new ImageView(context) {
                 @Override
+                public void setVisibility(int visibility) {
+                    super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
+                }
+
+                @Override
                 public boolean dispatchTouchEvent(MotionEvent event) {
                     if (getAlpha() < 0.5f) return false;
                     return super.dispatchTouchEvent(event);
@@ -4039,6 +4045,11 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
         botButton = new ImageView(getContext()) {
             @Override
+            public void setVisibility(int visibility) {
+                super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
+            }
+
+            @Override
             public void setAlpha(float alpha) {
                 super.setAlpha(alpha);
                 if (scheduledButton != null) {
@@ -4123,7 +4134,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             @Override
             public void setVisibility(int visibility) {
-                super.setVisibility(visibility);
+                super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
                 if (audioVideoButtonContainer != null) {
                     audioVideoButtonContainer.invalidate();
                 }
@@ -11535,7 +11546,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (messageEditText != null) {
                 messageEditText.setVisibility(View.VISIBLE);
             }
-            emojiButton.setVisibility(View.VISIBLE);
+            emojiButton.setVisibility(ultraEconomyMode ? View.GONE : View.VISIBLE);
             deleteRichDraftButton.setVisibility(View.GONE);
             sendButton.setLocked(false);
         }
@@ -13507,6 +13518,9 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     private void showPopup(int show, int contentType, boolean allowAnimation, boolean waitKeyboard) {
+        if (ultraEconomyMode && contentType == POPUP_CONTENT_BOT_KEYBOARD) {
+            return;
+        }
         if (show == 2) {
             return;
         }
@@ -16753,11 +16767,35 @@ public class ChatActivityEnterView extends FrameLayout implements
 
     }
 
+    public void setUltraEconomyMode(boolean enabled) {
+        if (ultraEconomyMode == enabled) {
+            return;
+        }
+        ultraEconomyMode = enabled;
+        if (emojiButton != null) {
+            emojiButton.setVisibility(enabled || richDraftActive ? GONE : VISIBLE);
+        }
+        if (attachButton != null) {
+            attachButton.setVisibility(enabled || isLiveComment ? GONE : VISIBLE);
+        }
+        if (enabled) {
+            if (botButton != null) {
+                botButton.setVisibility(GONE);
+            }
+            if (audioVideoButtonContainer != null) {
+                audioVideoButtonContainer.setVisibility(GONE);
+            }
+        } else {
+            updateBotButton(false);
+            checkSendButton(false);
+        }
+    }
+
     private boolean isLiveComment;
     public void setLiveComment(boolean isLiveComment, boolean isAdmin) {
         if (this.isLiveComment == isLiveComment) return;
         this.isLiveComment = isLiveComment;
-        attachButton.setVisibility(isLiveComment ? View.GONE : View.VISIBLE);
+        attachButton.setVisibility(ultraEconomyMode || isLiveComment ? View.GONE : View.VISIBLE);
         if (isLiveComment) {
             AndroidUtilities.removeFromParent(notifyButton);
         }

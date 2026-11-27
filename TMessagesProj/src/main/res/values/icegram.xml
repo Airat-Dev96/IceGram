@@ -13,6 +13,15 @@
     <string name="IcegramHideTypingInfo">Do not send typing indicators in cloud chats.</string>
     <string name="IcegramHideReadReceipts">Hide read receipts</string>
     <string name="IcegramHideReadReceiptsInfo">Read messages locally without sending cloud-chat read receipts. Suppressed receipts are not sent later.</string>
+    <string name="IcegramGhostExceptions">Ghost Mode chat exceptions</string>
+    <string name="IcegramGhostExceptionsInfo">Ghost Mode stays off in selected chats. Exceptions are stored per Telegram account, not account slot.</string>
+    <string name="IcegramGhostExceptionAdd">Add chat exception</string>
+    <string name="IcegramGhostExceptionResume">Remove exception</string>
+    <string name="IcegramReadOnSend">Read chat when I send</string>
+    <string name="IcegramReadOnSendInfo">Send a read receipt for the latest loaded incoming message when you send a message. Off by default; this can reveal activity.</string>
+    <string name="IcegramReadNow">Read now</string>
+    <string name="IcegramHideChannelSponsored">Hide channel and bot sponsored messages</string>
+    <string name="IcegramHideChannelSponsoredInfo">Do not request or show sponsored messages in channels and bots. PSA notices and ordinary messages are unchanged. Off by default.</string>
     <string name="AyugramMessageHistoryEnabled">Local message history</string>
     <string name="AyugramMessageHistoryEnabledInfo">Keep previous text and captions before cloud-message edits or deletions. Disabled by default; secret and self-destructing messages are excluded.</string>
     <string name="AyugramMessageHistory">Message history</string>
@@ -39,6 +48,8 @@ Saved: %5$s
     <string name="AyugramMessageHistoryClearConfirm">Delete all locally saved message history for this account?</string>
     <string name="AyugramMessageHistoryCancel">Cancel</string>
     <string name="IcegramPerformance">Performance</string>
+    <string name="IcegramUltraEconomy">Ultra economy mode</string>
+    <string name="IcegramUltraEconomyInfo">Text-first mode: disables animations and autoplay, hides main tabs and non-chat drawer shortcuts, and removes media, emoji and recording controls from the composer. Static received media may still be visible. Settings remain available; switching off restores the previous animation setting.</string>
     <string name="IcegramApplyPreset">Apply Ice Mode</string>
     <string name="IcegramPresetInfo">Turn off optional animations, blur and autoplay for GIFs and videos. Change individual effects below.</string>
     <string name="IcegramClassicInterface">Apply classic interface</string>

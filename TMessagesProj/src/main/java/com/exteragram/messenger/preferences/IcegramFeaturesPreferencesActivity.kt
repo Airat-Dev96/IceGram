@@ -38,12 +38,12 @@ import java.util.ArrayList
 
 class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
     private enum class Item {
-        ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
+        ULTRA_ECONOMY, ICE_PRESET, CLASSIC_INTERFACE, COMPACT_CACHE, LAZY_WIDGETS, ANIMATIONS, DATA,
         HIDE_PHONE, SAVE_BUTTON,
         MESSAGE_HISTORY_ENABLED, MESSAGE_HISTORY, HISTORY_EXCEPTIONS,
         GHOST_QUICK, GHOST_OPTIONS, GHOST_EXCEPTIONS, READ_ON_SEND, SILENT_SEND,
         AUTO_PROXY,
-        UPSTREAM, PLUGINS;
+        UPSTREAM, PLUGINS, HIDE_CHANNEL_SPONSORED;
 
         val id: Int = ordinal + 1
     }
@@ -52,6 +52,8 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
 
     override fun fillItems(items: ArrayList<UItem>, adapter: UniversalAdapter) {
         items.add(UItem.asHeader(getString(R.string.IcegramPerformance)))
+        items.add(uCheck(Item.ULTRA_ECONOMY, getString(R.string.IcegramUltraEconomy),
+            IcegramConfig.isUltraEconomyModeEnabled(), getString(R.string.IcegramUltraEconomyInfo)))
         items.add(uButton(Item.ICE_PRESET, getString(R.string.IcegramApplyPreset),
             R.drawable.msg_settings, subtext = getString(R.string.IcegramPresetInfo)))
         items.add(uButton(Item.CLASSIC_INTERFACE, getString(R.string.IcegramClassicInterface),
@@ -82,6 +84,8 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             IcegramConfig.isReadOnSendEnabled(), getString(R.string.IcegramReadOnSendInfo)))
         items.add(uCheck(Item.SILENT_SEND, getString(R.string.IcegramSilentSend),
             IcegramConfig.isSilentSendEnabled(), getString(R.string.IcegramSilentSendInfo)))
+        items.add(uCheck(Item.HIDE_CHANNEL_SPONSORED, getString(R.string.IcegramHideChannelSponsored),
+            IcegramConfig.isHideChannelSponsoredMessagesEnabled(), getString(R.string.IcegramHideChannelSponsoredInfo)))
         items.add(uCheck(Item.MESSAGE_HISTORY_ENABLED, getString(R.string.AyugramMessageHistoryEnabled),
             IcegramConfig.isMessageHistoryEnabled(), getString(R.string.AyugramMessageHistoryEnabledInfo)))
         items.add(uButton(Item.MESSAGE_HISTORY, getString(R.string.AyugramMessageHistory),
@@ -108,6 +112,7 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
 
     override fun onClick(item: UItem, view: View, position: Int, x: Float, y: Float) {
         when (item.id) {
+            Item.ULTRA_ECONOMY.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setUltraEconomyModeEnabled(it) }
             Item.ICE_PRESET.id -> {
                 LiteMode.setAllFlags(0)
                 LiteMode.setPowerSaverFollowSystem(true)
@@ -150,7 +155,10 @@ class IcegramFeaturesPreferencesActivity : BasePreferencesActivity() {
             Item.HISTORY_EXCEPTIONS.id -> presentFragment(MessageHistoryExceptionsActivity())
             Item.GHOST_QUICK.id -> toggleBooleanSettingAndRefresh(item) { GhostModeController.setEnabled(it) }
             Item.GHOST_OPTIONS.id -> presentFragment(AyugramPreferencesActivity())
+            Item.GHOST_EXCEPTIONS.id -> presentFragment(GhostModeExceptionsActivity())
+            Item.READ_ON_SEND.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setReadOnSendEnabled(it) }
             Item.SILENT_SEND.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setSilentSendEnabled(it) }
+            Item.HIDE_CHANNEL_SPONSORED.id -> toggleBooleanSettingAndRefresh(item) { IcegramConfig.setHideChannelSponsoredMessagesEnabled(it) }
             Item.AUTO_PROXY.id -> presentFragment(AutoProxyPreferencesActivity())
             Item.UPSTREAM.id -> Browser.openUrl(parentActivity, IcegramConfig.UPSTREAM_URL)
             Item.PLUGINS.id -> presentFragment(PluginsActivity())

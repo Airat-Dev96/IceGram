@@ -17,6 +17,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.utils.glass.GlassEngine;
+import org.icegram.messenger.IcegramConfig;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -107,6 +108,9 @@ public class LiteMode {
     }
 
     public static int getValue(boolean ignorePowerSaving) {
+        if (!ignorePowerSaving && IcegramConfig.isUltraEconomyModeEnabled()) {
+            return PRESET_POWER_SAVER;
+        }
         if (!loaded) {
             loadPreference();
         }
@@ -216,6 +220,9 @@ public class LiteMode {
     }
 
     public static boolean isEnabled(int flag) {
+        if (IcegramConfig.isUltraEconomyModeEnabled()) {
+            return false;
+        }
         if (flag == FLAG_CHAT_FORUM_TWOCOLUMN && AndroidUtilities.isTablet()) {
             // always enabled for tablets
             return true;

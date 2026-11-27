@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import com.exteragram.messenger.ExteraConfig;
+import org.icegram.messenger.IcegramConfig;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -76,8 +77,11 @@ public class DrawerMenuView extends ScrollView {
         boolean hasVisibleItems = false;
         boolean pendingDivider = false;
 
-        for (int i = 0; i < MainMenuLayout.getMainMenuLayout().size(); i++) {
-            int id = MainMenuLayout.getMainMenuLayout().get(i);
+        var menuLayout = IcegramConfig.isUltraEconomyModeEnabled()
+                ? java.util.Arrays.asList(MainMenuItem.ARCHIVE.getId(), MainMenuItem.SAVED.getId(), MainMenuItem.SETTINGS.getId())
+                : MainMenuLayout.getMainMenuLayout();
+        for (int i = 0; i < menuLayout.size(); i++) {
+            int id = menuLayout.get(i);
 
             if (id == MainMenuItem.DIVIDER.getId()) {
                 if (hasVisibleItems) {

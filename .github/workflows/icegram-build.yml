@@ -71,6 +71,7 @@ jobs:
           python3 Tools/icegram/test-ghost.py
           python3 Tools/icegram/test-history.py
           python3 Tools/icegram/test-sponsor.py
+          python3 Tools/icegram/test-ultra-economy.py
           python3 Tools/icegram/check-source.py
           python3 Tools/icegram/test-apk.py
       - name: Generate icegram icons and build single-ABI full release

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.UserConfig;
 
 import java.util.Collections;
@@ -26,6 +27,7 @@ public final class IcegramConfig {
     private static volatile Boolean messageHistoryEnabled;
     private static volatile Boolean readOnSend;
     private static volatile Boolean hideChannelSponsoredMessages;
+    private static volatile Boolean ultraEconomyModeEnabled;
 
     private IcegramConfig() {
     }
@@ -52,6 +54,44 @@ public final class IcegramConfig {
 
     public static void setLazyWidgetsEnabled(boolean enabled) {
         preferences().edit().putBoolean("lazy_widgets", enabled).apply();
+    }
+
+    public static boolean isUltraEconomyModeEnabled() {
+        Boolean enabled = ultraEconomyModeEnabled;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = ultraEconomyModeEnabled;
+                if (enabled == null) {
+                    ultraEconomyModeEnabled = enabled = preferences().getBoolean("ultra_economy_mode", false);
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static synchronized void setUltraEconomyModeEnabled(boolean enabled) {
+        SharedPreferences preferences = preferences();
+        boolean previous = preferences.getBoolean("ultra_economy_mode", false);
+        if (previous == enabled) {
+            ultraEconomyModeEnabled = enabled;
+            return;
+        }
+        SharedPreferences globalPreferences = MessagesController.getGlobalMainSettings();
+        if (enabled) {
+            preferences.edit()
+                    .putBoolean("ultra_economy_previous_view_animations", globalPreferences.getBoolean("view_animations", true))
+                    .putBoolean("ultra_economy_mode", true)
+                    .apply();
+            globalPreferences.edit().putBoolean("view_animations", false).apply();
+        } else {
+            boolean previousAnimations = preferences.getBoolean("ultra_economy_previous_view_animations", true);
+            preferences.edit()
+                    .putBoolean("ultra_economy_mode", false)
+                    .remove("ultra_economy_previous_view_animations")
+                    .apply();
+            globalPreferences.edit().putBoolean("view_animations", previousAnimations).apply();
+        }
+        ultraEconomyModeEnabled = enabled;
     }
 
     public static boolean isGhostModeEnabled() {
@@ -349,5 +389,23 @@ public final class IcegramConfig {
 
     public static void setHideProxySponsorEnabled(boolean enabled) {
         preferences().edit().putBoolean("hide_proxy_sponsor", enabled).apply();
+    }
+
+    public static boolean isHideChannelSponsoredMessagesEnabled() {
+        Boolean enabled = hideChannelSponsoredMessages;
+        if (enabled == null) {
+            synchronized (IcegramConfig.class) {
+                enabled = hideChannelSponsoredMessages;
+                if (enabled == null) {
+                    hideChannelSponsoredMessages = enabled = preferences().getBoolean("hide_channel_sponsored_messages", false);
+                }
+            }
+        }
+        return enabled;
+    }
+
+    public static void setHideChannelSponsoredMessagesEnabled(boolean enabled) {
+        preferences().edit().putBoolean("hide_channel_sponsored_messages", enabled).apply();
+        hideChannelSponsoredMessages = enabled;
     }
 }

@@ -27550,6 +27550,12 @@ public class ChatActivity extends BaseFragment implements
     private Pattern sponsoredUrlPattern;
     private MessageObject botSponsoredMessage;
     private void addSponsoredMessages(boolean animated) {
+        if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+            sponsoredMessagesAdded = true;
+            botSponsoredMessage = null;
+            sponsoredMessagesPostsBetween = 0;
+            return;
+        }
         if (sponsoredMessagesAdded || chatMode != 0 || !ChatObject.isChannel(currentChat) && !UserObject.isBot(currentUser) || !forwardEndReached[0] || getUserConfig().isPremium() && getMessagesController().isSponsoredDisabled() || isReport()) {
             return;
         }
@@ -31837,7 +31843,8 @@ public class ChatActivity extends BaseFragment implements
         boolean showTranslate = !searching && (TranslationProviders.isChatTranslationUnlocked(currentAccount, getDialogId()) && getMessagesController().getTranslateController().isDialogTranslatable(getDialogId()) && !getMessagesController().getTranslateController().isTranslateDialogHidden(getDialogId()) || DEBUG_TOP_PANELS);
         boolean showAddProfilePicture = UserObject.isBot(currentUser) && currentUser.bot_can_edit && currentUser.photo == null;
         boolean showBizBot = currentEncryptedChat == null && preferences.getLong("dialog_botid" + did, 0) != 0 || DEBUG_TOP_PANELS;
-        boolean showBotAd = currentUser != null && currentUser.bot && messages.size() >= 2 && botSponsoredMessage != null;
+        boolean showBotAd = !IcegramConfig.isHideChannelSponsoredMessagesEnabled()
+                && currentUser != null && currentUser.bot && messages.size() >= 2 && botSponsoredMessage != null;
         if (showRestartTopic) {
             shownRestartTopic = true;
         }
@@ -32609,6 +32616,7 @@ public class ChatActivity extends BaseFragment implements
             chatActivityEnterView.setFieldFocused(true);
         }
         if (chatActivityEnterView != null) {
+            chatActivityEnterView.setUltraEconomyMode(IcegramConfig.isUltraEconomyModeEnabled());
             chatActivityEnterView.onResume();
         }
         if (currentUser != null) {

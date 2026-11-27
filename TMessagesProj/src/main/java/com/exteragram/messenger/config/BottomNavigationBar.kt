@@ -16,6 +16,8 @@
 
 package com.exteragram.messenger.config
 
+import org.icegram.messenger.IcegramConfig
+
 const val SHOW = 0
 const val HIDE = 1
 const val FLOATING = 2
@@ -24,6 +26,6 @@ private var mode = SHOW
 
 fun getMode(): Int = mode.coerceIn(SHOW, FLOATING).also { mode = it }
 fun setMode(value: Int) { mode = value; getMode() }
-fun hidden(): Boolean = getMode() == HIDE
-fun visible(): Boolean = getMode() != HIDE
-fun floating(): Boolean = getMode() == FLOATING
+fun hidden(): Boolean = IcegramConfig.isUltraEconomyModeEnabled() || getMode() == HIDE
+fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled() && getMode() != HIDE
+fun floating(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled() && getMode() == FLOATING

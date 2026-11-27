@@ -83,6 +83,33 @@ def main():
     assert 'getBoolean("hide_proxy_sponsor", true)' in config
     print("PASS: sponsor defaults and RPC/list integration; proxy transport unchanged")
 
+    channel_setting = 'getBoolean("hide_channel_sponsored_messages", false)'
+    assert channel_setting in config
+    assert '"hide_channel_sponsored_messages"' in config
+    preferences = (JAVA / "com/exteragram/messenger/preferences/IcegramFeaturesPreferencesActivity.kt").read_text()
+    assert "Item.HIDE_CHANNEL_SPONSORED" in preferences
+    assert "IcegramConfig.isHideChannelSponsoredMessagesEnabled()" in preferences
+
+    controller_method = method(source, "public SponsoredMessagesInfo getSponsoredMessages(long dialogId)")
+    assert controller_method.index("isHideChannelSponsoredMessagesEnabled()") < controller_method.index("new TLRPC.TL_messages_getSponsoredMessages()")
+    assert "return null;" in controller_method[:controller_method.index("new TLRPC.TL_messages_getSponsoredMessages()")]
+
+    chat_activity = (JAVA / "org/telegram/ui/ChatActivity.java").read_text()
+    add_ads = method(chat_activity, "private void addSponsoredMessages(boolean animated)")
+    assert add_ads.index("isHideChannelSponsoredMessagesEnabled()") < add_ads.index("getSponsoredMessages(dialog_id)")
+    assert "sponsoredMessagesAdded = true;" in add_ads
+    assert "!IcegramConfig.isHideChannelSponsoredMessagesEnabled()" in chat_activity
+
+    video_ads = (JAVA / "org/telegram/messenger/video/VideoAds.java").read_text()
+    for signature in ("private void init(BulletinFactory bulletinFactory)", "private void load()",
+                      "private void schedule()", "private void show()"):
+        body = method(video_ads, signature)
+        assert "isHideChannelSponsoredMessagesEnabled()" in body, signature
+    load = method(video_ads, "private void load()")
+    assert load.index("isHideChannelSponsoredMessagesEnabled()") < load.index("new TLRPC.TL_messages_getSponsoredMessages()")
+    assert "cache.ads.clear();" in video_ads
+    print("PASS: channel/bot sponsored requests and cached video ads are gated; PSA/proxy paths remain separate")
+
 
 if __name__ == "__main__":
     main()

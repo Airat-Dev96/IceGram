@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 
 import com.exteragram.messenger.utils.network.RemoteUtils;
 
+import org.icegram.messenger.IcegramConfig;
 import org.aspectj.lang.annotation.AdviceName;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -182,6 +183,12 @@ public static VideoAds make(
         this.bulletinFactory = bulletinFactory;
         this.lastTime = System.currentTimeMillis();
         this.first = true;
+        if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+            cache.ads.clear();
+            cache.loaded = false;
+            loaded = true;
+            return;
+        }
         if (cache.loaded) {
             start_delay = cache.startDelay;
             between_delay = cache.betweenDelay;
@@ -198,6 +205,13 @@ public static VideoAds make(
     private void load() {
         if (loading || loaded) return;
 
+        if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+            cache.ads.clear();
+            cache.loaded = false;
+            loaded = true;
+            return;
+        }
+
         if (UserConfig.getInstance(currentAccount).isPremium() && MessagesController.getInstance(currentAccount).isSponsoredDisabled()) {
             return;
         }
@@ -210,6 +224,16 @@ public static VideoAds make(
         req.msg_id = msg_id;
         requestId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
             if (!loading) return;
+
+            if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+                ads.clear();
+                cache.ads.clear();
+                cache.loadTime = System.currentTimeMillis();
+                cache.loaded = false;
+                loaded = true;
+                loading = false;
+                return;
+            }
 
             if (res instanceof TLRPC.TL_messages_sponsoredMessages) {
                 final TLRPC.TL_messages_sponsoredMessages r = (TLRPC.TL_messages_sponsoredMessages) res;
@@ -236,6 +260,12 @@ public static VideoAds make(
 
     private void schedule() {
         AndroidUtilities.cancelRunOnUIThread(showRunnable);
+        if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+            ads.clear();
+            cache.ads.clear();
+            cache.loaded = false;
+            return;
+        }
         if (!loaded || ads.isEmpty()) return;
         final int delay = first ? start_delay : between_delay;
         final long timePassed = System.currentTimeMillis() - lastTime;
@@ -267,6 +297,13 @@ public static VideoAds make(
     private float currentMenuTranslationY;
 
     private void show() {
+        if (IcegramConfig.isHideChannelSponsoredMessagesEnabled()) {
+            AndroidUtilities.cancelRunOnUIThread(showRunnable);
+            ads.clear();
+            cache.ads.clear();
+            cache.loaded = false;
+            return;
+        }
         if (ads.isEmpty()) return;
         final TLRPC.TL_sponsoredMessage ad = ads.get(0);
 

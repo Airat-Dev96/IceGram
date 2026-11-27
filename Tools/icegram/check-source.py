@@ -285,6 +285,8 @@ def integration():
     check("refresh(true)" in auto_worker and auto_proxy.count("background && !IcegramConfig.isAutoProxyEnabled()") == 2 and
           "NetworkType.CONNECTED" in auto_scheduler and "ExistingPeriodicWorkPolicy.UPDATE" in auto_scheduler,
           "Background refresh must require network, remain unique and stop applying results after disable")
+    check(".setInitialDelay(1, TimeUnit.MINUTES)" in auto_scheduler,
+          "Initial automatic proxy work must not compete with application startup")
     check("IcegramProxyAutoBadge" in text(java / "org/telegram/ui/ProxyListActivity.java"),
           "Automatic proxies need a visible localized label")
     check("int defaultValue = 0," in lite and 'getBoolean("lite_mode_battery_follow_system", true)' in lite, "Wrong Ice Mode defaults")

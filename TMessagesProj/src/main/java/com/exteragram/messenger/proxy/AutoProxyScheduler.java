@@ -34,6 +34,7 @@ public final class AutoProxyScheduler {
                     AutoProxyWorker.class,
                     IcegramConfig.getAutoProxyIntervalHours(),
                     TimeUnit.HOURS)
+                    .setInitialDelay(1, TimeUnit.MINUTES)
                     .setConstraints(constraints)
                     .build();
             workManager.enqueueUniquePeriodicWork(

@@ -11694,7 +11694,7 @@
     <string name="FpnvConsentSimSlotValue">SIM %1$d</string>
     <string name="FpnvConsentPhoneNumber">Phone Number</string>
     <string name="IcegramUltraEconomy">Ultra economy mode</string>
-    <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
+    <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. The standard input button layout stays intact for reliable sending; media, recording, emoji and sticker actions are blocked while enabled. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
     <string name="IcegramUltraOptions">Battery-saving options</string>
     <string name="IcegramUltraFeedback">Silent interface without vibration</string>
     <string name="IcegramUltraFeedbackInfo">Disable interface clicks, chat send/receive sounds and touch feedback. Restore previous interface preferences when disabled. System message-notification sounds and call ringtones remain unchanged.</string>

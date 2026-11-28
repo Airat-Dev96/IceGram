@@ -119,14 +119,29 @@ def main():
     assert 'chatActivityEnterView.setUltraEconomyMode(IcegramConfig.isUltraEconomyModeEnabled())' in chat
     composer = (JAVA / "org/telegram/ui/Components/ChatActivityEnterView.java").read_text()
     assert 'public void setUltraEconomyMode(boolean enabled)' in composer
-    assert 'ultraEconomyMode && visibility == VISIBLE ? GONE : visibility' in composer
-    assert 'ultraEconomyMode ? View.GONE : View.VISIBLE' in composer
-    assert 'ultraEconomyMode && contentType == POPUP_CONTENT_BOT_KEYBOARD' in composer
+    assert 'ultraEconomyMode && visibility == VISIBLE ? GONE : visibility' not in composer
+    assert 'ultraEconomyMode ? View.GONE : View.VISIBLE' not in composer
+    assert 'ultraEconomyMode && show == 1 && (contentType == POPUP_CONTENT_BOT_KEYBOARD || contentType == POPUP_CONTENT_EMOJI_KEYBOARD)' in composer
     send_container = composer.split('sendButtonContainer = new FrameLayout(context)', 1)[1].split('sendButton =', 1)[0]
     assert 'ultraEconomyMode && visibility' not in send_container
     mode_setter = composer.split('public void setUltraEconomyMode(boolean enabled)', 1)[1].split('private boolean isLiveComment', 1)[0]
     assert 'sendButtonContainer.setVisibility' not in mode_setter
     assert 'sendButton.setVisibility' not in mode_setter
+    assert 'audioVideoButtonContainer.setVisibility' not in mode_setter
+    assert 'setVisibility' not in mode_setter
+    assert 'setAlpha' not in mode_setter
+    assert 'setScale' not in mode_setter
+    assert 'checkSendButton(false)' in mode_setter
+    assert 'if (ultraEconomyMode && !recordingAudioVideo) return true;' in composer
+    assert 'if (ultraEconomyMode || adjustPanLayoutHelper != null' in composer
+    text_watcher = composer.split('messageEditText.addTextChangedListener(new TextWatcher()', 1)[1]
+    text_changed = text_watcher.split('public void onTextChanged(CharSequence charSequence, int start, int before, int count)', 1)[1]
+    assert re.search(r'if \(innerTextChange == 1\) \{\s*checkSendButton\(false\);\s*return;', text_changed)
+    assert 'checkSendButton(true);' in text_changed
+    send_state = composer.split('public void checkSendButton(boolean animated)', 1)[1].split('public boolean isCaptionNearAttach', 1)[0]
+    assert 'message.length() > 0' in send_state
+    assert 'getSendButtonInternal().setVisibility(VISIBLE)' in send_state
+    assert 'public void setUltraEconomyMode(boolean enabled) {\n        ultraEconomyMode = enabled;' in composer
 
     localized = []
     for resource in ("values/strings.xml", "values-ru/strings.xml"):

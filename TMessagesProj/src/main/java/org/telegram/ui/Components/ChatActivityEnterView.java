@@ -2822,6 +2822,9 @@ public class ChatActivityEnterView extends FrameLayout implements
         emojiButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_glass_defaultIcon), PorterDuff.Mode.SRC_IN));
         emojiButton.setBackground(Theme.createInsetRoundRectDrawable(getThemedColor(Theme.key_listSelector), dp(21), dp(1), dp(3)));
         emojiButton.setOnClickListener(v -> {
+            if (ultraEconomyMode) {
+                return;
+            }
             if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
                 return;
             }
@@ -2859,6 +2862,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         });
         emojiButton.setOnLongClickListener(x -> {
+            if (ultraEconomyMode) {
+                return false;
+            }
             if (ExteraConfig.getHideSendAsPeer() && delegate != null && delegate.getSendAsPeers() != null && delegate.getSendAsPeers().peers.size() > 1) {
                 ignoreSendAsButtonUpdates = true;
                 updateSendAsButton(false, true);
@@ -2873,6 +2879,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             return parentFragment != null && parentFragment.getChatActivityEnterView() == this && parentFragment.showQuickStickers(x);
         });
         QuickTilesMenu.attachLongPressRamp(emojiButton, () -> parentFragment != null && parentFragment.getChatActivityEnterView() == this && parentFragment.canShowQuickStickers()
+                && !ultraEconomyMode
                 && !(ExteraConfig.getHideSendAsPeer() && delegate != null && delegate.getSendAsPeers() != null && delegate.getSendAsPeers().peers.size() > 1));
         messageEditTextContainer.addView(emojiButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.BOTTOM | Gravity.LEFT, SIDE_MARGIN, 0, 0, 0));
         setEmojiButtonImage(false, false);
@@ -2952,11 +2959,6 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             attachButton = new ImageView(context) {
                 @Override
-                public void setVisibility(int visibility) {
-                    super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
-                }
-
-                @Override
                 public boolean dispatchTouchEvent(MotionEvent event) {
                     if (getAlpha() < 0.5f) return false;
                     return super.dispatchTouchEvent(event);
@@ -2968,15 +2970,15 @@ public class ChatActivityEnterView extends FrameLayout implements
             ThemeBind.selectorBackground(attachButton, Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
             messageEditTextContainer.addView(attachButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.BOTTOM | Gravity.RIGHT));
             attachButton.setOnClickListener(v -> {
-                if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress() || attachLayoutPaddingAlpha == 0f) {
+                if (ultraEconomyMode || adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress() || attachLayoutPaddingAlpha == 0f) {
                     return;
                 }
                 delegate.didPressAttachButton();
             });
             if (parentFragment != null && isChat) {
-                attachButton.setOnLongClickListener(v -> parentFragment.getChatActivityEnterView() == this && attachLayoutPaddingAlpha != 0f
+                attachButton.setOnLongClickListener(v -> !ultraEconomyMode && parentFragment.getChatActivityEnterView() == this && attachLayoutPaddingAlpha != 0f
                         && (adjustPanLayoutHelper == null || !adjustPanLayoutHelper.animationInProgress()) && parentFragment.showQuickAttach(v));
-                QuickTilesMenu.attachLongPressRamp(attachButton, () -> parentFragment.getChatActivityEnterView() == this && attachLayoutPaddingAlpha != 0f
+                QuickTilesMenu.attachLongPressRamp(attachButton, () -> !ultraEconomyMode && parentFragment.getChatActivityEnterView() == this && attachLayoutPaddingAlpha != 0f
                         && (adjustPanLayoutHelper == null || !adjustPanLayoutHelper.animationInProgress()) && parentFragment.canShowQuickAttach());
             }
             attachButton.setContentDescription(getString(R.string.AccDescrAttachButton));
@@ -3159,6 +3161,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             @Override
             public boolean onTouchEvent(MotionEvent motionEvent) {
+                if (ultraEconomyMode && !recordingAudioVideo) return true;
                 if (isLiveComment) return false;
                 if (cameraChooserItemOptions != null && cameraChooserItemOptions.isShown()) {
                     this.getParent().requestDisallowInterceptTouchEvent(true);
@@ -4045,11 +4048,6 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
         botButton = new ImageView(getContext()) {
             @Override
-            public void setVisibility(int visibility) {
-                super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
-            }
-
-            @Override
             public void setAlpha(float alpha) {
                 super.setAlpha(alpha);
                 if (scheduledButton != null) {
@@ -4066,6 +4064,9 @@ public class ChatActivityEnterView extends FrameLayout implements
         AndroidUtilities.updateViewVisibilityAnimated(botButton, false, 0.1f, false);
         attachLayout.addView(botButton, 0, LayoutHelper.createLinear(DEFAULT_HEIGHT, DEFAULT_HEIGHT));
         botButton.setOnClickListener(v -> {
+            if (ultraEconomyMode) {
+                return;
+            }
 //            if (hasBotWebView() && botCommandsMenuIsShowing()) {
 //                botWebViewMenuContainer.dismiss(v::callOnClick);
 //                return;
@@ -4133,14 +4134,6 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             @Override
-            public void setVisibility(int visibility) {
-                super.setVisibility(ultraEconomyMode && visibility == VISIBLE ? GONE : visibility);
-                if (audioVideoButtonContainer != null) {
-                    audioVideoButtonContainer.invalidate();
-                }
-            }
-
-            @Override
             public boolean onTouchEvent(MotionEvent event) {
                 if (getAlpha() <= 0f) { // for accessibility
                     return false;
@@ -4158,7 +4151,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         ThemeBind.selectorBackground(expandStickersButton, Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         sendButtonContainer.addView(expandStickersButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.RIGHT | Gravity.BOTTOM));
         expandStickersButton.setOnClickListener(v -> {
-            if (expandStickersButton.getVisibility() != VISIBLE || expandStickersButton.getAlpha() != 1.0f || waitingForKeyboardOpen || (keyboardVisible && messageEditText != null && messageEditText.isFocused())) {
+            if (ultraEconomyMode || expandStickersButton.getVisibility() != VISIBLE || expandStickersButton.getAlpha() != 1.0f || waitingForKeyboardOpen || (keyboardVisible && messageEditText != null && messageEditText.isFocused())) {
                 return;
             }
             if (stickersExpanded) {
@@ -6510,6 +6503,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
 
                 if (innerTextChange == 1) {
+                    checkSendButton(false);
                     return;
                 }
                 if (sendByEnter && !ctrlPressed && !shiftPressed && !ignoreTextChange && !isPaste && editingMessageObject == null && count > before && charSequence.length() > 0 && charSequence.length() == start + count && charSequence.charAt(charSequence.length() - 1) == '\n') {
@@ -11546,7 +11540,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (messageEditText != null) {
                 messageEditText.setVisibility(View.VISIBLE);
             }
-            emojiButton.setVisibility(ultraEconomyMode ? View.GONE : View.VISIBLE);
+            emojiButton.setVisibility(View.VISIBLE);
             deleteRichDraftButton.setVisibility(View.GONE);
             sendButton.setLocked(false);
         }
@@ -13496,11 +13490,14 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     public void showEmojiView() {
+        if (ultraEconomyMode) {
+            return;
+        }
         showPopup(1, POPUP_CONTENT_EMOJI_KEYBOARD);
     }
 
     public void openStickersPanel() {
-        if (emojiButtonRestricted || adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
+        if (ultraEconomyMode || emojiButtonRestricted || adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
             return;
         }
         showPopup(1, POPUP_CONTENT_EMOJI_KEYBOARD);
@@ -13518,7 +13515,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     private void showPopup(int show, int contentType, boolean allowAnimation, boolean waitKeyboard) {
-        if (ultraEconomyMode && contentType == POPUP_CONTENT_BOT_KEYBOARD) {
+        if (ultraEconomyMode && show == 1 && (contentType == POPUP_CONTENT_BOT_KEYBOARD || contentType == POPUP_CONTENT_EMOJI_KEYBOARD)) {
             return;
         }
         if (show == 2) {
@@ -16768,34 +16765,19 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     public void setUltraEconomyMode(boolean enabled) {
-        if (ultraEconomyMode == enabled) {
-            return;
-        }
         ultraEconomyMode = enabled;
-        if (emojiButton != null) {
-            emojiButton.setVisibility(enabled || richDraftActive ? GONE : VISIBLE);
+        if (enabled && isPopupShowing() && (currentPopupContentType == POPUP_CONTENT_BOT_KEYBOARD || currentPopupContentType == POPUP_CONTENT_EMOJI_KEYBOARD)) {
+            showPopup(0, currentPopupContentType, false, false);
         }
-        if (attachButton != null) {
-            attachButton.setVisibility(enabled || isLiveComment ? GONE : VISIBLE);
-        }
-        if (enabled) {
-            if (botButton != null) {
-                botButton.setVisibility(GONE);
-            }
-            if (audioVideoButtonContainer != null) {
-                audioVideoButtonContainer.setVisibility(GONE);
-            }
-        } else {
-            updateBotButton(false);
-            checkSendButton(false);
-        }
+        updateBotButton(false);
+        checkSendButton(false);
     }
 
     private boolean isLiveComment;
     public void setLiveComment(boolean isLiveComment, boolean isAdmin) {
         if (this.isLiveComment == isLiveComment) return;
         this.isLiveComment = isLiveComment;
-        attachButton.setVisibility(ultraEconomyMode || isLiveComment ? View.GONE : View.VISIBLE);
+        attachButton.setVisibility(isLiveComment ? View.GONE : View.VISIBLE);
         if (isLiveComment) {
             AndroidUtilities.removeFromParent(notifyButton);
         }

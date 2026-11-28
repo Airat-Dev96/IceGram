@@ -7,6 +7,8 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.LiteMode;
+import org.telegram.messenger.MediaController;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
@@ -19,7 +21,8 @@ public final class UltraEconomyController {
         TELEGRAM_POWER(1, R.string.IcegramUltraNativePower, R.string.IcegramUltraNativePowerInfo),
         NO_AUTODOWNLOAD(1 << 1, R.string.IcegramUltraAutodownload, R.string.IcegramUltraAutodownloadInfo),
         REFRESH_RATE(1 << 2, R.string.IcegramUltraRefreshRate, R.string.IcegramUltraRefreshRateInfo),
-        BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo);
+        BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo),
+        NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo);
 
         public final int flag;
         public final int title;
@@ -95,6 +98,7 @@ public final class UltraEconomyController {
 
     private static void applySettings() {
         applyNativePower();
+        applyRaiseSensors();
         AndroidUtilities.runOnUIThread(UltraEconomyRefreshRate::refresh);
         AndroidUtilities.runOnUIThread(() -> Theme.applyUltraEconomyTheme(isEnabled(Option.BLACK_THEME)));
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
@@ -118,6 +122,23 @@ public final class UltraEconomyController {
             LiteMode.setAllFlags(filterLiteModeFlags(snapshot.getInt("lite_mode6", 0)));
         } else if (snapshot.isSaved() && snapshot.restore(main, true)) {
             LiteMode.loadPreference();
+        }
+    }
+
+    private static void applyRaiseSensors() {
+        SharedPreferences main = MessagesController.getGlobalMainSettings();
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("raise_sensors");
+        if (isEnabled(Option.NO_RAISE_SENSORS)) {
+            if (!snapshot.capture(main, "raise_to_listen", "raise_to_speak")) {
+                return;
+            }
+            main.edit().putBoolean("raise_to_listen", false).putBoolean("raise_to_speak", false).commit();
+            SharedConfig.raiseToListen = false;
+            SharedConfig.raiseToSpeak = false;
+            MediaController.getInstance().disableUltraEconomyRaiseSensors();
+        } else if (snapshot.isSaved() && snapshot.restore(main, true)) {
+            SharedConfig.raiseToListen = main.getBoolean("raise_to_listen", true);
+            SharedConfig.raiseToSpeak = main.getBoolean("raise_to_speak", false);
         }
     }
 }

@@ -48,6 +48,11 @@ def main():
     assert 'snapshot.getString("ultraActive"' in black_theme
     assert 'snapshot.getInt("selectedAutoNightType"' in black_theme
     assert 'removeOverride' not in black_theme
+    media = (JAVA / "org/telegram/messenger/MediaController.java").read_text()
+    sensors = media.split('public void disableUltraEconomyRaiseSensors()', 1)[1].split('public void stopRaiseToEarSensors', 1)[0]
+    assert 'stopRaiseToEarSensors(raiseChat, false, false)' in sensors
+    assert 'ignoreOnPause = false' in sensors
+    assert 'Option.NO_RAISE_SENSORS' in media.split('public void startRaiseToEarSensors', 1)[1].split('public void clearRaiseChat', 1)[0]
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

@@ -279,6 +279,8 @@
     <string name="IcegramUltraEconomy">Режим ультраэкономии</string>
     <string name="IcegramUltraEconomyInfo">Текстовый интерфейс с дополнительными ограничениями ради батареи. Сообщения, звонки и уведомления о новых сообщениях остаются включены. Экономия зависит от устройства, экрана и использования и не гарантируется. При выключении восстанавливаются настройки, сохранённые перед применением режима.</string>
     <string name="IcegramUltraOptions">Параметры экономии</string>
+    <string name="IcegramUltraSensors">Отключить сенсоры поднятия</string>
+    <string name="IcegramUltraSensorsInfo">Выключить поднесение к уху и поднятие для записи, остановить их активные сенсоры. Датчик приближения во время звонков не меняется.</string>
     <string name="IcegramUltraBlackTheme">Чёрная тема AMOLED</string>
     <string name="IcegramUltraBlackThemeInfo">Применить существующую Monet Black, если она доступна (Android 12+). Сохранить текущую тему и автоматический ночной режим, не удаляя обои. На неподдерживаемом устройстве ничего не меняется.</string>
     <string name="IcegramUltraRefreshRate">Интерфейс до 60 Гц</string>

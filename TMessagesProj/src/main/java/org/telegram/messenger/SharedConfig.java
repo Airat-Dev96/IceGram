@@ -1262,6 +1262,9 @@ public class SharedConfig {
     }
 
     public static boolean enabledRaiseTo(boolean speak) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.NO_RAISE_SENSORS)) {
+            return false;
+        }
         return raiseToListen && (!speak || raiseToSpeak);
     }
 

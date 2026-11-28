@@ -2485,6 +2485,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     public void startRaiseToEarSensors(ChatActivity chatActivity) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.NO_RAISE_SENSORS)) {
+            return;
+        }
         if (chatActivity == null || accelerometerSensor == null && (gravitySensor == null || linearAcceleration == null) || proximitySensor == null) {
             return;
         }
@@ -2503,6 +2506,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             countLess = 0;
             raisedToBack = 0;
             Utilities.globalQueue.postRunnable(() -> {
+                if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.NO_RAISE_SENSORS)) {
+                    return;
+                }
                 if (gravitySensor != null) {
                     sensorManager.registerListener(MediaController.this, gravitySensor, 30000);
                 }
@@ -2521,6 +2527,13 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     public void clearRaiseChat(ChatActivity chatActivity) {
         if (raiseChat == chatActivity) {
             raiseChat = null;
+        }
+    }
+
+    public void disableUltraEconomyRaiseSensors() {
+        ignoreOnPause = false;
+        if (sensorsStarted) {
+            stopRaiseToEarSensors(raiseChat, false, false);
         }
     }
 

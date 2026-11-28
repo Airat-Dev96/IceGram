@@ -22,7 +22,7 @@ public final class AutoProxyScheduler {
     public static void sync() {
         try {
             WorkManager workManager = WorkManager.getInstance(ApplicationLoader.applicationContext);
-            if (!IcegramConfig.isAutoProxyEnabled()) {
+            if (!IcegramConfig.isAutoProxyEnabled() || org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
                 workManager.cancelUniqueWork(UNIQUE_WORK_NAME);
                 return;
             }

@@ -465,6 +465,9 @@ public class ContactsController extends BaseController {
 
     public void checkContacts() {
         Utilities.globalQueue.postRunnable(() -> {
+            if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                return;
+            }
             if (checkContactsInternal()) {
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("detected contacts change");
@@ -569,6 +572,9 @@ public class ContactsController extends BaseController {
     }
 
     private boolean checkContactsInternal() {
+        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+            return false;
+        }
         boolean reload = false;
         try {
             if (!hasContactsPermission()) {
@@ -1000,11 +1006,19 @@ public class ContactsController extends BaseController {
     }
 
     protected void performSyncPhoneBook(final HashMap<String, Contact> contactHashMap, final boolean request, final boolean first, final boolean schedule, final boolean force, final boolean checkCount, final boolean canceled) {
+        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+            contactsSyncInProgress = false;
+            return;
+        }
         if (!first && !contactsBookLoaded) {
             return;
         }
         Utilities.globalQueue.postRunnable(() -> {
             int newPhonebookContacts = 0;
+            if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                contactsSyncInProgress = false;
+                return;
+            }
             int serverContactsInPhonebook = 0;
             boolean disableDeletion = true; //disable contacts deletion, because phone numbers can't be compared due to different numbers format
             /*if (schedule) {
@@ -1354,6 +1368,10 @@ public class ContactsController extends BaseController {
                     completedRequestsCount = 0;
                     final int count = (int) Math.ceil(toImport.size() / 500.0);
                     for (int a = 0; a < count; a++) {
+                        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                            contactsSyncInProgress = false;
+                            return;
+                        }
                         final TLRPC.TL_contacts_importContacts req = new TLRPC.TL_contacts_importContacts();
                         int start = a * 500;
                         int end = Math.min(start + 500, toImport.size());
@@ -2016,6 +2034,9 @@ public class ContactsController extends BaseController {
     }
 
     private void performWriteContactsToPhoneBookInternal(ArrayList<TLRPC.TL_contact> contactsArray) {
+        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+            return;
+        }
         Cursor cursor = null;
         long time = System.currentTimeMillis();
         try {

@@ -282,7 +282,8 @@ def integration():
           "current != initialProxy" in auto_proxy and
           "current != null && !controller.isAutomaticProxy(current)" in auto_proxy,
           "Automatic refresh must preserve manual proxies and concurrent user choices")
-    check("refresh(true)" in auto_worker and auto_proxy.count("background && !IcegramConfig.isAutoProxyEnabled()") == 2 and
+    check("refresh(true)" in auto_worker and auto_proxy.count("background && (!IcegramConfig.isAutoProxyEnabled()") == 2 and
+          "UltraEconomyController.isBackgroundWorkPaused()" in auto_scheduler and
           "NetworkType.CONNECTED" in auto_scheduler and "ExistingPeriodicWorkPolicy.UPDATE" in auto_scheduler,
           "Background refresh must require network, remain unique and stop applying results after disable")
     check(".setInitialDelay(1, TimeUnit.MINUTES)" in auto_scheduler,

@@ -82,6 +82,10 @@ public final class AutoProxyController {
         if (callback == null) {
             return;
         }
+        if (background && org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+            callback.onComplete(new Result(true, 0, 0, 0, 0, false));
+            return;
+        }
         if (!refreshInProgress.compareAndSet(false, true)) {
             callback.onComplete(new Result(false, 0, 0, 0, 0, false));
             return;
@@ -93,14 +97,14 @@ public final class AutoProxyController {
             ProxyController controller = ProxyController.getInstance();
             SharedConfig.ProxyInfo initialProxy = controller.getCurrentProxy();
             boolean initiallyEnabled = controller.isProxyEnabled();
-            new SourceLoader(account, postLimit, (messages, error) -> {
+            new SourceLoader(account, postLimit, background, (messages, error) -> {
                 if (error != null || messages == null) {
                     refreshInProgress.set(false);
                     callback.onComplete(new Result(false, 0, 0, 0, 0, false));
                     return;
                 }
 
-                if (background && !IcegramConfig.isAutoProxyEnabled()) {
+                if (background && (!IcegramConfig.isAutoProxyEnabled() || org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused())) {
                     refreshInProgress.set(false);
                     callback.onComplete(new Result(true, 0, 0, 0, 0, false));
                     return;
@@ -116,17 +120,26 @@ public final class AutoProxyController {
         private final int account;
         private final int postLimit;
         private final SourceCallback callback;
+        private final boolean background;
+        private final Runnable cancellation = this::onTimeout;
         private final Runnable timeout = this::onTimeout;
         private boolean completed;
         private int requestId;
 
-        private SourceLoader(int account, int postLimit, SourceCallback callback) {
+        private SourceLoader(int account, int postLimit, boolean background, SourceCallback callback) {
             this.account = account;
             this.postLimit = postLimit;
+            this.background = background;
             this.callback = callback;
         }
 
         private void start() {
+            if (background) {
+                org.icegram.messenger.UltraEconomyController.registerBackgroundCancellation(cancellation);
+                if (completed) {
+                    return;
+                }
+            }
             AndroidUtilities.runOnUIThread(timeout, SOURCE_TIMEOUT_MILLIS);
             try {
                 ChatUtils.getInstance(account).resolveChannel(SOURCE_CHANNEL, chat ->
@@ -179,6 +192,7 @@ public final class AutoProxyController {
                 return;
             }
             completed = true;
+            org.icegram.messenger.UltraEconomyController.unregisterBackgroundCancellation(cancellation);
             AndroidUtilities.cancelRunOnUIThread(timeout);
             callback.onResult(messages, error);
         }
@@ -188,6 +202,7 @@ public final class AutoProxyController {
         private final SharedConfig.ProxyInfo result;
         private final SharedConfig.ProxyInfo storedAtStart;
         private boolean completed;
+
         private Runnable timeout;
 
         private Candidate(ProxySettings settings, SharedConfig.ProxyInfo storedAtStart) {
@@ -204,6 +219,7 @@ public final class AutoProxyController {
         private final boolean initiallyEnabled;
         private final boolean background;
         private final Callback callback;
+        private final Runnable cancellation = this::cancelBackground;
         private int nextIndex;
         private int inFlight;
         private int checked;
@@ -255,7 +271,26 @@ public final class AutoProxyController {
         }
 
         private void start() {
+            if (background) {
+                org.icegram.messenger.UltraEconomyController.registerBackgroundCancellation(cancellation);
+            }
             fillSlots();
+        }
+
+        private void cancelBackground() {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            for (Candidate candidate : candidates) {
+                candidate.completed = true;
+                if (candidate.timeout != null) {
+                    AndroidUtilities.cancelRunOnUIThread(candidate.timeout);
+                }
+            }
+            org.icegram.messenger.UltraEconomyController.unregisterBackgroundCancellation(cancellation);
+            refreshInProgress.set(false);
+            callback.onComplete(new Result(true, discovered, checked, available, 0, false));
         }
 
         private void fillSlots() {
@@ -274,6 +309,7 @@ public final class AutoProxyController {
 
             if (inFlight == 0 && nextIndex >= candidates.size()) {
                 completed = true;
+                org.icegram.messenger.UltraEconomyController.unregisterBackgroundCancellation(cancellation);
                 applyResults();
             }
         }
@@ -310,7 +346,7 @@ public final class AutoProxyController {
         }
 
         private void applyResults() {
-            if (background && !IcegramConfig.isAutoProxyEnabled()) {
+            if (background && (!IcegramConfig.isAutoProxyEnabled() || org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused())) {
                 refreshInProgress.set(false);
                 callback.onComplete(new Result(true, discovered, checked, available, 0, false));
                 return;

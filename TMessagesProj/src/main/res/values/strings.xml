@@ -11696,6 +11696,8 @@
     <string name="IcegramUltraEconomy">Ultra economy mode</string>
     <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
     <string name="IcegramUltraOptions">Battery-saving options</string>
+    <string name="IcegramUltraBackground">Pause fork background jobs</string>
+    <string name="IcegramUltraBackgroundInfo">Pause periodic auto-proxy refresh, plugin and analyzer update checks and phonebook sync. The fork app updater is already disabled. Keep the current proxy, Telegram connection, incoming messages and calls.</string>
     <string name="IcegramUltraEffects">No decorative effects</string>
     <string name="IcegramUltraEffectsInfo">Disable blur, glass, wallpaper motion and parallax, profile backgrounds, message and reaction effects. Reuse native power-saving flags without changing other people’s profile data.</string>
     <string name="IcegramUltraStories">Hide and stop loading stories</string>

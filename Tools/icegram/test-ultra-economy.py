@@ -61,6 +61,16 @@ def main():
     connection = (JAVA / 'org/telegram/tgnet/ConnectionsManager.java').read_text()
     assert 'UltraEconomyStories.suppress(object)' in connection
     assert 'onComplete.run(null, economyError)' in connection
+    for filename in ('com/exteragram/messenger/proxy/AutoProxyScheduler.java',
+                     'com/exteragram/messenger/proxy/AutoProxyWorker.kt',
+                     'com/exteragram/messenger/proxy/AutoProxyController.java',
+                     'org/telegram/messenger/ContactsController.java'):
+        assert 'UltraEconomyController.isBackgroundWorkPaused()' in (JAVA / filename).read_text()
+    full_java = ROOT / 'TMessagesProj/src/full/java'
+    for filename in ('com/exteragram/messenger/plugins/PythonPluginsEngine.kt',
+                     'com/exteragram/messenger/plugins/analyzer/AnalyzerUpdater.kt',
+                     'com/exteragram/messenger/plugins/updates/TelegramUpdateSource.kt'):
+        assert 'UltraEconomyController.isBackgroundWorkPaused()' in (full_java / filename).read_text()
     assert 'if (areEffectsDisabled())' in controller
     assert 'return isEnabled(Option.TELEGRAM_POWER) || isEnabled(Option.NO_EFFECTS)' in controller
     for filename in ('org/telegram/ui/EmojiAnimationsOverlay.java',

@@ -30,6 +30,11 @@ internal object TelegramUpdateSource {
         query: String,
         callback: (TLRPC.messages_Messages?, TLRPC.TL_error?) -> Unit,
     ) {
+        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+            val error = TLRPC.TL_error().apply { code = -1001; text = "ULTRA_ECONOMY_UPDATES_PAUSED" }
+            callback(null, error)
+            return
+        }
         RemoteUtils.searchMessages(account, 50, query, TLRPC.TL_inputMessagesFilterDocument(), { result, error ->
             AndroidUtilities.runOnUIThread { callback(result, error) }
         }, 3000)
@@ -37,8 +42,13 @@ internal object TelegramUpdateSource {
 
     class Download {
         private var listener: DownloadController.FileDownloadProgressListener? = null
+        private var cancellation: Runnable? = null
 
         fun start(account: Int, message: TLRPC.Message, document: TLRPC.Document, callback: (File?) -> Unit) {
+            if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                callback(null)
+                return
+            }
             if (listener != null) return
             val loader = FileLoader.getInstance(account)
             val file = loader.getPathToAttachForAccount(document)
@@ -66,6 +76,8 @@ internal object TelegramUpdateSource {
                 fun finish(downloaded: File?) {
                     if (listener !== this) return
                     listener = null
+                    cancellation?.let(org.icegram.messenger.UltraEconomyController::unregisterBackgroundCancellation)
+                    cancellation = null
                     AndroidUtilities.cancelRunOnUIThread(stalled)
                     controller.removeLoadingFileObserver(this)
                     callback(downloaded)
@@ -80,6 +92,12 @@ internal object TelegramUpdateSource {
                 override fun getObserverTag(): Int = tag
             }
             listener = observer
+            cancellation = Runnable {
+                observer.finish(null)
+                loader.cancelLoadFile(document)
+            }
+            org.icegram.messenger.UltraEconomyController.registerBackgroundCancellation(cancellation!!)
+            if (listener == null) return
             try {
                 observer.resetStallTimer()
                 controller.addLoadingFileObserver(FileLoader.getAttachFileName(document), messageObject, observer)

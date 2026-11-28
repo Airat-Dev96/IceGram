@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.exteragram.messenger.ExteraConfig;
+import com.exteragram.messenger.proxy.AutoProxyScheduler;
 
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.AndroidUtilities;
@@ -20,6 +21,8 @@ import org.telegram.ui.Components.WallpaperParallaxEffect;
 import org.telegram.ui.Components.Reactions.ReactionsEffectOverlay;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 public final class UltraEconomyController {
     public enum Option {
@@ -29,7 +32,8 @@ public final class UltraEconomyController {
         BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo),
         NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo),
         NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo),
-        NO_EFFECTS(1 << 6, R.string.IcegramUltraEffects, R.string.IcegramUltraEffectsInfo);
+        NO_EFFECTS(1 << 6, R.string.IcegramUltraEffects, R.string.IcegramUltraEffectsInfo),
+        PAUSE_BACKGROUND(1 << 7, R.string.IcegramUltraBackground, R.string.IcegramUltraBackgroundInfo);
 
         public final int flag;
         public final int title;
@@ -43,6 +47,7 @@ public final class UltraEconomyController {
     }
 
     private static volatile int optionMask = -1;
+    private static final HashSet<Runnable> backgroundCancellations = new HashSet<>();
 
     private UltraEconomyController() {
     }
@@ -107,6 +112,22 @@ public final class UltraEconomyController {
         return isEnabled(Option.TELEGRAM_POWER) || isEnabled(Option.NO_EFFECTS);
     }
 
+    public static boolean isBackgroundWorkPaused() {
+        return isEnabled(Option.PAUSE_BACKGROUND);
+    }
+
+    public static synchronized void registerBackgroundCancellation(Runnable cancellation) {
+        if (isBackgroundWorkPaused()) {
+            cancellation.run();
+        } else {
+            backgroundCancellations.add(cancellation);
+        }
+    }
+
+    public static synchronized void unregisterBackgroundCancellation(Runnable cancellation) {
+        backgroundCancellations.remove(cancellation);
+    }
+
     private static int allOptions() {
         int flags = 0;
         for (Option option : Option.values()) {
@@ -119,6 +140,12 @@ public final class UltraEconomyController {
         applyNativePower();
         applyRaiseSensors();
         applyStories();
+        AutoProxyScheduler.sync();
+        if (isBackgroundWorkPaused()) {
+            for (Runnable cancellation : new ArrayList<>(backgroundCancellations)) {
+                cancellation.run();
+            }
+        }
         WallpaperParallaxEffect.refreshUltraEconomy();
         if (areEffectsDisabled()) {
             ReactionsEffectOverlay.removeCurrent(true);
@@ -127,6 +154,7 @@ public final class UltraEconomyController {
         AndroidUtilities.runOnUIThread(() -> Theme.applyUltraEconomyTheme(isEnabled(Option.BLACK_THEME)));
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
             if (UserConfig.getInstance(account).isClientActivated()) {
+                applyContactSync(account);
                 DownloadController.getInstance(account).checkAutodownloadSettings();
             }
         }
@@ -189,6 +217,24 @@ public final class UltraEconomyController {
                 if (!enabled && !ExteraConfig.getHideStories()) {
                     controller.getStoriesController().loadStories();
                 }
+            }
+        }
+    }
+
+    private static void applyContactSync(int account) {
+        UserConfig config = UserConfig.getInstance(account);
+        SharedPreferences preferences = config.getPreferences();
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("contacts_" + account + "_" + config.getClientUserId());
+        if (isBackgroundWorkPaused()) {
+            if (!snapshot.capture(preferences, "syncContacts")) {
+                return;
+            }
+            config.syncContacts = false;
+            preferences.edit().putBoolean("syncContacts", false).commit();
+        } else if (snapshot.isSaved() && snapshot.restore(preferences, true)) {
+            config.syncContacts = preferences.getBoolean("syncContacts", true);
+            if (config.syncContacts) {
+                org.telegram.messenger.ContactsController.getInstance(account).checkContacts();
             }
         }
     }

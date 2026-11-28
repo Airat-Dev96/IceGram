@@ -2511,6 +2511,7 @@ class PythonPluginsEngine : PluginsController.PluginsEngine {
             }
 
             internal fun checkUpdates(force: Boolean, source: BaseFragment?) {
+                if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) return
                 if (status == 1 || status == 3 || status == 4) return
                 val now = System.currentTimeMillis()
                 if (!force) {
@@ -2525,6 +2526,10 @@ class PythonPluginsEngine : PluginsController.PluginsEngine {
                 updateStatus(1)
                 val account = UserConfig.selectedAccount
                 TelegramUpdateSource.search(account, "python_sdk") { resp, error ->
+                    if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                        updateStatus(0)
+                        return@search
+                    }
                     if (account != UserConfig.selectedAccount) {
                         updateStatus(0)
                         return@search
@@ -2714,12 +2719,18 @@ class PythonPluginsEngine : PluginsController.PluginsEngine {
                 update: PythonSdkUpdateInfo,
                 autoRestartEngine: Boolean = false
             ) {
+                if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) return
                 val message = update.message ?: return
                 val document = update.document ?: return
                 if (isLoading) return
                 isLoading = true
                 updateStatus(3)
                 download.start(update.account, message, document) { downloaded ->
+                    if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                        isLoading = false
+                        updateStatus(0)
+                        return@start
+                    }
                     if (downloaded == null) {
                         isLoading = false
                         updateStatus(5)

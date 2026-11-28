@@ -15,7 +15,7 @@ class AutoProxyWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        if (!IcegramConfig.isAutoProxyEnabled()) {
+        if (!IcegramConfig.isAutoProxyEnabled() || org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
             return Result.success()
         }
 

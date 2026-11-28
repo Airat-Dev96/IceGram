@@ -50,7 +50,7 @@ internal object AnalyzerUpdater {
         get() = AnalyzerUpdate.enabled && wanted && !inProgress && prompt?.get()?.isShowing != true
 
     private val wanted: Boolean
-        get() = pluginsEngine && pluginsStaticAnalysis
+        get() = pluginsEngine && pluginsStaticAnalysis && !org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()
 
     private val inProgress: Boolean
         get() = status == Status.CHECKING || status == Status.LOADING
@@ -58,6 +58,7 @@ internal object AnalyzerUpdater {
     private var nextCheck = 0L
 
     fun check(force: Boolean = false, source: BaseFragment? = null, report: ((String) -> Unit)? = null) {
+        if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) return
         if (!AnalyzerUpdate.enabled) {
             report?.invoke("Analyzer OTA is unavailable in this build")
             return
@@ -142,7 +143,9 @@ internal object AnalyzerUpdater {
         }
         status = Status.LOADING
         download.start(account, candidate.message, candidate.document) { file ->
-            if (file == null) {
+            if (org.icegram.messenger.UltraEconomyController.isBackgroundWorkPaused()) {
+                finish(false)
+            } else if (file == null) {
                 finishInstall(candidate.update, false)
             } else {
                 PluginAnalyzer.stageUpdate(candidate.update, file) { finishInstall(candidate.update, it) }

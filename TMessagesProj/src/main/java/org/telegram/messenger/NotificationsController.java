@@ -3440,6 +3440,9 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     private void playInChatSound() {
+        if (org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
+            return;
+        }
         if (!inChatSoundEnabled || MediaController.getInstance().isRecordingAudio()) {
             return;
         }
@@ -3461,11 +3464,14 @@ public class NotificationsController extends BaseController implements Notificat
                 if (Math.abs(SystemClock.elapsedRealtime() - lastSoundPlay) <= 500) {
                     return;
                 }
+                if (org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
+                    return;
+                }
                 try {
                     if (soundPool == null) {
                         soundPool = new SoundPool(3, AudioManager.STREAM_SYSTEM, 0);
                         soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
-                            if (status == 0) {
+                            if (status == 0 && !org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
                                 try {
                                     soundPool.play(sampleId, 1.0f, 1.0f, 1, 0, 1.0f);
                                 } catch (Exception e) {
@@ -6167,6 +6173,9 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     public void playOutChatSound() {
+        if (org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
+            return;
+        }
         if (!inChatSoundEnabled || MediaController.getInstance().isRecordingAudio()) {
             return;
         }
@@ -6182,11 +6191,14 @@ public class NotificationsController extends BaseController implements Notificat
                 if (Math.abs(SystemClock.elapsedRealtime() - lastSoundOutPlay) <= 100) {
                     return;
                 }
+                if (org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
+                    return;
+                }
                 lastSoundOutPlay = SystemClock.elapsedRealtime();
                 if (soundPool == null) {
                     soundPool = new SoundPool(3, AudioManager.STREAM_SYSTEM, 0);
                     soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
-                        if (status == 0) {
+                        if (status == 0 && !org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
                             try {
                                 soundPool.play(sampleId, 1.0f, 1.0f, 1, 0, 1.0f);
                             } catch (Exception e) {

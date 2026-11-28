@@ -11696,6 +11696,8 @@
     <string name="IcegramUltraEconomy">Ultra economy mode</string>
     <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
     <string name="IcegramUltraOptions">Battery-saving options</string>
+    <string name="IcegramUltraFeedback">Silent interface without vibration</string>
+    <string name="IcegramUltraFeedbackInfo">Disable interface clicks, chat send/receive sounds and touch feedback. Restore previous interface preferences when disabled. System message-notification sounds and call ringtones remain unchanged.</string>
     <string name="IcegramUltraNotifications">Text-only notifications</string>
     <string name="IcegramUltraNotificationsInfo">Keep new-message alerts, text and reply actions, without avatars, large images or media attachments. Notification sounds and call alerts are not disabled.</string>
     <string name="IcegramUltraBackground">Pause fork background jobs</string>

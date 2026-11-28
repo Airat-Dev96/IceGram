@@ -79,6 +79,13 @@ def main():
     assert 'builder.addAction(wearReplyAction)' in notifications
     avatars = (JAVA / 'com/exteragram/messenger/notifications/NotificationAvatars.kt').read_text()
     assert 'Option.PLAIN_NOTIFICATIONS' in avatars.split('val size', 1)[0]
+    assert len(re.findall(r'^        [A-Z_]+\(', controller, re.M)) == 10
+    feedback = (JAVA / 'org/icegram/messenger/UltraEconomyInterfaceFeedback.java').read_text()
+    assert 'view.setHapticFeedbackEnabled(state.haptic)' in feedback
+    assert 'view.setSoundEffectsEnabled(state.sound)' in feedback
+    assert 'postDelayed' not in feedback
+    assert '"EnableInChatSound"' in controller
+    assert 'setNotificationsEnabled' not in controller
     for filename in ('org/telegram/ui/EmojiAnimationsOverlay.java',
                      'org/telegram/ui/Components/Reactions/ReactionsEffectOverlay.java',
                      'org/telegram/ui/Components/WallpaperParallaxEffect.java',

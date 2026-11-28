@@ -74,7 +74,7 @@ public class TextDetailCell extends FrameLayout implements Theme.Colorable {
         textView.setOnLinkLongPressListener(span -> {
             if (span != null) {
                 try {
-                    performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                    performHapticFeedback(VibratorUtils.getType(HapticFeedbackConstants.LONG_PRESS), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                 } catch (Exception ignore) {};
                 span.onClick(textView);
             }
@@ -143,7 +143,7 @@ public class TextDetailCell extends FrameLayout implements Theme.Colorable {
         rightValueTextView.setOnLinkLongPressListener(span -> {
             if (span != null) {
                 try {
-                    performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                    performHapticFeedback(VibratorUtils.getType(HapticFeedbackConstants.LONG_PRESS), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                 } catch (Exception ignore) {};
                 span.onClick(valueTextView);
             }

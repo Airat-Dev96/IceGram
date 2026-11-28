@@ -979,7 +979,7 @@ public class StarsReactionsSheet extends BottomSheet implements NotificationCent
                 doneRipple[0] = true;
                 LaunchActivity.makeRipple(to.centerX(), to.centerY(), 1.5f);
                 try {
-                    container.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                    container.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.LONG_PRESS), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                 } catch (Exception ignore) {}
                 if (pushed != null) {
                     pushed.run();
@@ -1007,7 +1007,7 @@ public class StarsReactionsSheet extends BottomSheet implements NotificationCent
                     doneRipple[0] = true;
                     LaunchActivity.makeRipple(to.centerX(), to.centerY(), 1.5f);
                     try {
-                        container.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                        container.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.LONG_PRESS), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                     } catch (Exception ignore) {}
                     if (pushed != null) {
                         pushed.run();

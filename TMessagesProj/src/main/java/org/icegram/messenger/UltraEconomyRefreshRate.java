@@ -29,6 +29,7 @@ public final class UltraEconomyRefreshRate {
         if (manager == null || view == null || params == null) {
             return;
         }
+        UltraEconomyInterfaceFeedback.watch(view);
         Preference preference = preferences.get(view);
         if (preference == null) {
             preference = new Preference();

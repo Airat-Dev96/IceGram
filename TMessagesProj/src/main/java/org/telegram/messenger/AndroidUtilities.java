@@ -6600,7 +6600,7 @@ public class AndroidUtilities {
             if (view == null || view.getContext() == null || !ExteraConfig.getInAppVibration()) return;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
             if (!((Vibrator) view.getContext().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl()) return;
-            view.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            view.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.TEXT_HANDLE_MOVE), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         } catch (Exception ignore) {}
     }
 
@@ -6609,7 +6609,7 @@ public class AndroidUtilities {
             if (view == null || view.getContext() == null || !ExteraConfig.getInAppVibration()) return;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
             if (!((Vibrator) view.getContext().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl()) return;
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            view.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.KEYBOARD_TAP), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         } catch (Exception ignore) {}
     }
 

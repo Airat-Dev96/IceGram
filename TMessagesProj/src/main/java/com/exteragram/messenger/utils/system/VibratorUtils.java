@@ -34,7 +34,8 @@ public class VibratorUtils {
     }
 
     private static boolean isVibrationAllowed() {
-        return ExteraConfig.getInAppVibration() && vibrator.hasVibrator();
+        return !org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()
+                && ExteraConfig.getInAppVibration() && vibrator.hasVibrator();
     }
 
     @SuppressWarnings("deprecation")
@@ -83,6 +84,10 @@ public class VibratorUtils {
         if (view == null) {
             return;
         }
+        if (org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent()) {
+            org.icegram.messenger.UltraEconomyInterfaceFeedback.disable(view);
+            return;
+        }
 
         view.setHapticFeedbackEnabled(false);
 
@@ -95,6 +100,6 @@ public class VibratorUtils {
     }
 
     public static int getType(int original) {
-        return ExteraConfig.getInAppVibration() ? original : -1;
+        return !org.icegram.messenger.UltraEconomyInterfaceFeedback.isSilent() && ExteraConfig.getInAppVibration() ? original : -1;
     }
 }

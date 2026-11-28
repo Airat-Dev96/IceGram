@@ -365,7 +365,7 @@ public class StarReactionsOverlay extends View {
         if (btn != null) btn.startAnimation();
         if (send) {
             try {
-                performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.KEYBOARD_TAP), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
             } catch (Exception ignore) {}
             StarsController.getInstance(chatActivity.getCurrentAccount()).sendPaidReaction(msg, chatActivity, +1, true, false, null);
         }

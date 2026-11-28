@@ -1557,7 +1557,7 @@ public class ReactionsContainerLayout extends FrameLayout implements Notificatio
         }
         if (type == TYPE_MESSAGE_EFFECTS) {
             try {
-                performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+                performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.KEYBOARD_TAP), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
             } catch (Exception ignore) {}
         }
     }

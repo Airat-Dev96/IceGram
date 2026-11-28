@@ -35,7 +35,8 @@ public final class UltraEconomyController {
         NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo),
         NO_EFFECTS(1 << 6, R.string.IcegramUltraEffects, R.string.IcegramUltraEffectsInfo),
         PAUSE_BACKGROUND(1 << 7, R.string.IcegramUltraBackground, R.string.IcegramUltraBackgroundInfo),
-        PLAIN_NOTIFICATIONS(1 << 8, R.string.IcegramUltraNotifications, R.string.IcegramUltraNotificationsInfo);
+        PLAIN_NOTIFICATIONS(1 << 8, R.string.IcegramUltraNotifications, R.string.IcegramUltraNotificationsInfo),
+        SILENT_INTERFACE(1 << 9, R.string.IcegramUltraFeedback, R.string.IcegramUltraFeedbackInfo);
 
         public final int flag;
         public final int title;
@@ -142,6 +143,7 @@ public final class UltraEconomyController {
         applyNativePower();
         applyRaiseSensors();
         applyStories();
+        applyInterfaceFeedback();
         AutoProxyScheduler.sync();
         if (isBackgroundWorkPaused()) {
             for (Runnable cancellation : new ArrayList<>(backgroundCancellations)) {
@@ -157,6 +159,7 @@ public final class UltraEconomyController {
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
             if (UserConfig.getInstance(account).isClientActivated()) {
                 applyContactSync(account);
+                applyChatSounds(account);
                 DownloadController.getInstance(account).checkAutodownloadSettings();
                 NotificationsController.getInstance(account).showNotifications();
             }
@@ -239,6 +242,34 @@ public final class UltraEconomyController {
             if (config.syncContacts) {
                 org.telegram.messenger.ContactsController.getInstance(account).checkContacts();
             }
+        }
+    }
+
+    private static void applyInterfaceFeedback() {
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("interface_feedback");
+        if (isEnabled(Option.SILENT_INTERFACE)) {
+            if (!snapshot.capture(ExteraConfig.getPreferences(), "inAppVibration")) {
+                return;
+            }
+            ExteraConfig.setInAppVibration(false);
+        } else if (snapshot.isSaved()) {
+            ExteraConfig.setInAppVibration(snapshot.getBoolean("inAppVibration", true));
+            snapshot.restore(ExteraConfig.getPreferences(), true);
+        }
+        UltraEconomyInterfaceFeedback.refresh();
+    }
+
+    private static void applyChatSounds(int account) {
+        SharedPreferences preferences = MessagesController.getNotificationsSettings(account);
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("chat_sounds_" + account + "_" + UserConfig.getInstance(account).getClientUserId());
+        if (isEnabled(Option.SILENT_INTERFACE)) {
+            if (!snapshot.capture(preferences, "EnableInChatSound")) {
+                return;
+            }
+            preferences.edit().putBoolean("EnableInChatSound", false).commit();
+            NotificationsController.getInstance(account).setInChatSoundEnabled(false);
+        } else if (snapshot.isSaved() && snapshot.restore(preferences, true)) {
+            NotificationsController.getInstance(account).setInChatSoundEnabled(preferences.getBoolean("EnableInChatSound", true));
         }
     }
 }

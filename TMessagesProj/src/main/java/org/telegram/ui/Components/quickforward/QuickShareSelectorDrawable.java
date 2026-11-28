@@ -145,7 +145,7 @@ public class QuickShareSelectorDrawable extends Drawable implements Animator.Ani
 
         cell.setHideSideButtonByQuickShare(true);
 
-        parent.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+        parent.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.KEYBOARD_TAP), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
 
         updateColors();
 
@@ -642,7 +642,7 @@ public class QuickShareSelectorDrawable extends Drawable implements Animator.Ani
             return;
         }
 
-        parent.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+        parent.performHapticFeedback(com.exteragram.messenger.utils.system.VibratorUtils.getType(HapticFeedbackConstants.KEYBOARD_TAP), HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         selectedIndex = index;
         for (int i = 0; i < avatarCells.length; i++) {
             avatarCells[i].setSelected(index == i, true);

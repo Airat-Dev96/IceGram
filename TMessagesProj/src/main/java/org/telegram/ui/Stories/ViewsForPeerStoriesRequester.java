@@ -72,6 +72,10 @@ public class ViewsForPeerStoriesRequester {
     private static long lastRequestTime;
 
     private void step() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            start(false);
+            return;
+        }
         if (!isRunning) {
             return;
         }

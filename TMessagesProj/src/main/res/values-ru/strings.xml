@@ -279,6 +279,8 @@
     <string name="IcegramUltraEconomy">Режим ультраэкономии</string>
     <string name="IcegramUltraEconomyInfo">Текстовый интерфейс с дополнительными ограничениями ради батареи. Сообщения, звонки и уведомления о новых сообщениях остаются включены. Экономия зависит от устройства, экрана и использования и не гарантируется. При выключении восстанавливаются настройки, сохранённые перед применением режима.</string>
     <string name="IcegramUltraOptions">Параметры экономии</string>
+    <string name="IcegramUltraStories">Скрыть и не загружать истории</string>
+    <string name="IcegramUltraStoriesInfo">Использовать «Скрыть истории», остановить их опрос и запросы ленты, профилей, поиска и превью. Истории из кэша не удаляются.</string>
     <string name="IcegramUltraSensors">Отключить сенсоры поднятия</string>
     <string name="IcegramUltraSensorsInfo">Выключить поднесение к уху и поднятие для записи, остановить их активные сенсоры. Датчик приближения во время звонков не меняется.</string>
     <string name="IcegramUltraBlackTheme">Чёрная тема AMOLED</string>

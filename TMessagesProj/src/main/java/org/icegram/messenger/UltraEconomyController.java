@@ -3,12 +3,15 @@ package org.icegram.messenger;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.exteragram.messenger.ExteraConfig;
+
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.SharedConfig;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
@@ -22,7 +25,8 @@ public final class UltraEconomyController {
         NO_AUTODOWNLOAD(1 << 1, R.string.IcegramUltraAutodownload, R.string.IcegramUltraAutodownloadInfo),
         REFRESH_RATE(1 << 2, R.string.IcegramUltraRefreshRate, R.string.IcegramUltraRefreshRateInfo),
         BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo),
-        NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo);
+        NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo),
+        NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo);
 
         public final int flag;
         public final int title;
@@ -99,6 +103,7 @@ public final class UltraEconomyController {
     private static void applySettings() {
         applyNativePower();
         applyRaiseSensors();
+        applyStories();
         AndroidUtilities.runOnUIThread(UltraEconomyRefreshRate::refresh);
         AndroidUtilities.runOnUIThread(() -> Theme.applyUltraEconomyTheme(isEnabled(Option.BLACK_THEME)));
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
@@ -139,6 +144,33 @@ public final class UltraEconomyController {
         } else if (snapshot.isSaved() && snapshot.restore(main, true)) {
             SharedConfig.raiseToListen = main.getBoolean("raise_to_listen", true);
             SharedConfig.raiseToSpeak = main.getBoolean("raise_to_speak", false);
+        }
+    }
+
+    private static void applyStories() {
+        UltraEconomySnapshot snapshot = new UltraEconomySnapshot("stories");
+        boolean enabled = isEnabled(Option.NO_STORIES);
+        if (enabled) {
+            if (!snapshot.capture(ExteraConfig.getPreferences(), "hideStories")) {
+                return;
+            }
+            ExteraConfig.setHideStories(true);
+        } else if (snapshot.isSaved()) {
+            ExteraConfig.setHideStories(snapshot.getBoolean("hideStories", false));
+            snapshot.restore(ExteraConfig.getPreferences(), true);
+        } else {
+            return;
+        }
+        for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+            if (UserConfig.getInstance(account).isClientActivated()) {
+                MessagesController controller = MessagesController.getInstance(account);
+                controller.getStoriesController().stopAllPollers();
+                NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.storiesUpdated);
+                NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.storiesEnabledUpdate);
+                if (!enabled && !ExteraConfig.getHideStories()) {
+                    controller.getStoriesController().loadStories();
+                }
+            }
         }
     }
 }

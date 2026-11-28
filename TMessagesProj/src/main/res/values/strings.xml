@@ -11696,6 +11696,8 @@
     <string name="IcegramUltraEconomy">Ultra economy mode</string>
     <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
     <string name="IcegramUltraOptions">Battery-saving options</string>
+    <string name="IcegramUltraStories">Hide and stop loading stories</string>
+    <string name="IcegramUltraStoriesInfo">Reuse Hide Stories, pause story polling and block story-feed, profile, search and preview requests. Cached stories are not deleted.</string>
     <string name="IcegramUltraSensors">Disable raise-to-ear sensors</string>
     <string name="IcegramUltraSensorsInfo">Turn off raise to listen and raise to record, and stop their active sensors. Call proximity sensing remains unchanged.</string>
     <string name="IcegramUltraBlackTheme">AMOLED black theme</string>

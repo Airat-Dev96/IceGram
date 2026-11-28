@@ -512,6 +512,20 @@ public class ConnectionsManager extends BaseController {
             object = modifiedRequest;
             object = FeedRequestNormalizer.normalize(currentAccount, object);
 
+            if (org.icegram.messenger.UltraEconomyStories.suppress(object)) {
+                TLRPC.TL_error economyError = new TLRPC.TL_error();
+                economyError.code = -1001;
+                economyError.text = "ULTRA_ECONOMY_STORIES_DISABLED";
+                Utilities.stageQueue.postRunnable(() -> {
+                    if (onComplete != null) {
+                        onComplete.run(null, economyError);
+                    } else if (onCompleteTimestamp != null) {
+                        onCompleteTimestamp.run(null, economyError, 0);
+                    }
+                });
+                return;
+            }
+
             GhostModeController.applyRequestPrivacy(object);
             if (!allowGhostReadReceipt && (GhostModeController.shouldSuppressRequest(currentAccount, object)
                     || GhostModeController.shouldDiscardQueuedReceipt(currentAccount, object, ghostReadToken, ghostStoryToken))) {

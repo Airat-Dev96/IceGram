@@ -189,6 +189,9 @@ public class StoriesController {
     }
 
     public void loadAllStories() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return;
+        }
         if (!firstLoad) {
             loadStories();
             loadStoriesRead();
@@ -196,6 +199,9 @@ public class StoriesController {
     }
 
     private void loadStoriesRead() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return;
+        }
         if (storiesReadLoaded) {
             return;
         }
@@ -250,6 +256,9 @@ public class StoriesController {
     }
 
     public boolean hasStories(long dialogId) {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return false;
+        }
         if (dialogId == 0 || ExteraConfig.getHideStories()) {
             return false;
         }
@@ -283,6 +292,9 @@ public class StoriesController {
     }
 
     public boolean hasStories() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return false;
+        }
         if (ExteraConfig.getHideStories()) {
             return false;
         }
@@ -290,6 +302,9 @@ public class StoriesController {
     }
 
     public void loadStories() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return;
+        }
         if (ExteraConfig.getHideStories()) {
             dialogListStories.clear();
             hiddenListStories.clear();
@@ -391,6 +406,9 @@ public class StoriesController {
     }
 
     private void loadFromServer(boolean hidden) {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled() || ExteraConfig.getHideStories()) {
+            return;
+        }
         if ((hidden && loadingFromServerHidden) || (!hidden && loadingFromServer) || loadingFromDatabase) {
             return;
         }
@@ -617,6 +635,9 @@ public class StoriesController {
     }
 
     public void preloadUserStories(TL_stories.PeerStories userStories) {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return;
+        }
         int preloadPosition = 0;
         for (int i = 0; i < userStories.stories.size(); i++) {
             if (userStories.stories.get(i).id > userStories.max_read_id) {
@@ -638,6 +659,9 @@ public class StoriesController {
     }
 
     private void preloadStory(long dialogId, TL_stories.StoryItem storyItem) {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return;
+        }
         if (storyItem.attachPath != null) {
             return;
         }
@@ -1536,6 +1560,10 @@ public class StoriesController {
     }
 
     public void pollViewsForSelfStories(long dialogId, boolean start) {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            stopAllPollers();
+            return;
+        }
         ViewsForPeerStoriesRequester requester = pollingViewsForSelfStoriesRequester.get(dialogId);
         if (requester == null) {
             requester = new ViewsForPeerStoriesRequester(this, dialogId, currentAccount);

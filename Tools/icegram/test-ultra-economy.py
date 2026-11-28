@@ -53,6 +53,14 @@ def main():
     assert 'stopRaiseToEarSensors(raiseChat, false, false)' in sensors
     assert 'ignoreOnPause = false' in sensors
     assert 'Option.NO_RAISE_SENSORS' in media.split('public void startRaiseToEarSensors', 1)[1].split('public void clearRaiseChat', 1)[0]
+    stories = (JAVA / "org/icegram/messenger/UltraEconomyStories.java").read_text()
+    assert 'TL_stories_getStoriesByID' in stories
+    assert 'TL_stories_getPeerMaxIDs' in stories
+    assert 'TL_messages_' not in stories
+    assert 'phoneCall' not in stories
+    connection = (JAVA / 'org/telegram/tgnet/ConnectionsManager.java').read_text()
+    assert 'UltraEconomyStories.suppress(object)' in connection
+    assert 'onComplete.run(null, economyError)' in connection
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

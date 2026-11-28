@@ -24138,6 +24138,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean storiesEnabled() {
+        if (org.icegram.messenger.UltraEconomyStories.isLoadingDisabled()) {
+            return false;
+        }
         if (ExteraConfig.getHideStories()) {
             return false;
         }

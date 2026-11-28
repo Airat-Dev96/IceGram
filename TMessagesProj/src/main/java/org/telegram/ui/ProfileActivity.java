@@ -1350,6 +1350,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         private final Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         public void setBackgroundColorId(MessagesController.PeerColor peerColor, boolean animated) {
+            if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+                peerColor = null;
+                animated = false;
+            }
             if (peerColor != null) {
                 hasColorById = true;
                 color1 = peerColor.getBgColor1(Theme.isCurrentThemeDark());
@@ -1413,6 +1417,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         private boolean emojiIsCollectible;
 
         public void setBackgroundEmojiId(long emojiId, boolean isCollectible, boolean animated) {
+            if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+                emojiId = 0;
+                isCollectible = false;
+                animated = false;
+                hasEmoji = false;
+            }
             emoji.set(emojiId, animated);
             emoji.setColor(emojiColor);
             emojiIsCollectible = isCollectible;

@@ -16,6 +16,8 @@ import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Components.WallpaperParallaxEffect;
+import org.telegram.ui.Components.Reactions.ReactionsEffectOverlay;
 
 import java.util.HashMap;
 
@@ -26,7 +28,8 @@ public final class UltraEconomyController {
         REFRESH_RATE(1 << 2, R.string.IcegramUltraRefreshRate, R.string.IcegramUltraRefreshRateInfo),
         BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo),
         NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo),
-        NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo);
+        NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo),
+        NO_EFFECTS(1 << 6, R.string.IcegramUltraEffects, R.string.IcegramUltraEffectsInfo);
 
         public final int flag;
         public final int title;
@@ -89,7 +92,19 @@ public final class UltraEconomyController {
     }
 
     public static int filterLiteModeFlags(int flags) {
-        return isEnabled(Option.TELEGRAM_POWER) ? 0 : flags;
+        if (isEnabled(Option.TELEGRAM_POWER)) {
+            return 0;
+        }
+        if (isEnabled(Option.NO_EFFECTS)) {
+            return flags & ~(LiteMode.FLAG_CHAT_BACKGROUND | LiteMode.FLAG_CHAT_BLUR | LiteMode.FLAG_CHAT_SCALE
+                    | LiteMode.FLAG_CHAT_THANOS | LiteMode.FLAG_LIQUID_GLASS | LiteMode.FLAG_PARTICLES
+                    | LiteMode.FLAG_ANIMATED_EMOJI_REACTIONS);
+        }
+        return flags;
+    }
+
+    public static boolean areEffectsDisabled() {
+        return isEnabled(Option.TELEGRAM_POWER) || isEnabled(Option.NO_EFFECTS);
     }
 
     private static int allOptions() {
@@ -104,6 +119,10 @@ public final class UltraEconomyController {
         applyNativePower();
         applyRaiseSensors();
         applyStories();
+        WallpaperParallaxEffect.refreshUltraEconomy();
+        if (areEffectsDisabled()) {
+            ReactionsEffectOverlay.removeCurrent(true);
+        }
         AndroidUtilities.runOnUIThread(UltraEconomyRefreshRate::refresh);
         AndroidUtilities.runOnUIThread(() -> Theme.applyUltraEconomyTheme(isEnabled(Option.BLACK_THEME)));
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
@@ -116,7 +135,7 @@ public final class UltraEconomyController {
     private static void applyNativePower() {
         SharedPreferences main = MessagesController.getGlobalMainSettings();
         UltraEconomySnapshot snapshot = new UltraEconomySnapshot("native_power");
-        if (isEnabled(Option.TELEGRAM_POWER)) {
+        if (areEffectsDisabled()) {
             HashMap<String, Object> defaults = new HashMap<>();
             defaults.put("lite_mode6", LiteMode.getValue(true));
             defaults.put("view_animations", main.getBoolean("view_animations", true));

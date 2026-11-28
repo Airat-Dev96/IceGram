@@ -20,6 +20,9 @@ import org.telegram.messenger.AndroidUtilities;
 
 public class WallpaperParallaxEffect implements SensorEventListener {
 
+	private static final java.util.WeakHashMap<WallpaperParallaxEffect, Boolean> instances = new java.util.WeakHashMap<>();
+	private boolean requestedEnabled;
+
 	private float[] rollBuffer = new float[3], pitchBuffer = new float[3];
 	private int bufferOffset;
 	private WindowManager wm;
@@ -35,6 +38,9 @@ public class WallpaperParallaxEffect implements SensorEventListener {
 	}
 
 	public void setEnabled(boolean enabled) {
+		requestedEnabled = enabled;
+		instances.put(this, true);
+		enabled = enabled && !org.icegram.messenger.UltraEconomyController.areEffectsDisabled();
 		if (this.enabled != enabled) {
 			this.enabled = enabled;
 			if (accelerometer == null)
@@ -43,6 +49,17 @@ public class WallpaperParallaxEffect implements SensorEventListener {
 				sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 			} else {
 				sensorManager.unregisterListener(this);
+			}
+		}
+	}
+
+	public static void refreshUltraEconomy() {
+		for (WallpaperParallaxEffect effect : new java.util.ArrayList<>(instances.keySet())) {
+			if (effect != null) {
+				effect.setEnabled(effect.requestedEnabled);
+				if (!effect.enabled && effect.callback != null) {
+					effect.callback.onOffsetsChanged(0, 0, 0);
+				}
 			}
 		}
 	}

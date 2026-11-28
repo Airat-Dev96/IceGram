@@ -274,6 +274,10 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     }
 
     public void draw(Canvas canvas) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            clear();
+            return;
+        }
         if (!drawingObjects.isEmpty()) {
             for (int i = 0; i < drawingObjects.size(); i++) {
                 DrawingObject drawingObject = drawingObjects.get(i);
@@ -425,6 +429,9 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     }
 
     public boolean onTapItem(ChatMessageCell view, ChatActivity chatActivity, boolean userTapped) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return false;
+        }
         if (chatActivity.isSecretChat() || view.getMessageObject() == null || view.getMessageObject().getId() < 0) {
             return false;
         }
@@ -483,6 +490,9 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     }
 
     public boolean showAnimationForActionCell(ChatActionCell view, TLRPC.Document document, TLRPC.VideoSize videoSize) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return false;
+        }
         if (drawingObjects.size() > 12) {
             return false;
         }
@@ -549,6 +559,9 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     }
 
     public void preloadAnimation(ChatMessageCell cell) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return;
+        }
         MessageObject messageObject = cell.getMessageObject();
         if (messageObject.isPremiumSticker()) {
             return;
@@ -617,6 +630,9 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     }
 
     public boolean createDrawingObject(String emoji, int viewId, TLRPC.Document viewDocument, @Nullable MessageObject messageObject, int animation, boolean sendTap, boolean sendSeen, float imageW, float imageH, boolean isOutOwner) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return false;
+        }
         boolean isPremiumSticker = messageObject != null && messageObject.isPremiumSticker();
         boolean isMessageEffect = messageObject != null && messageObject.getEffect() != null;
         if (isMessageEffect || isPremiumSticker || supportedEmoji.contains(emoji)) {

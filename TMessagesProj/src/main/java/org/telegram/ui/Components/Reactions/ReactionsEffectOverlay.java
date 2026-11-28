@@ -763,6 +763,9 @@ public class ReactionsEffectOverlay {
     }
 
     public static void show(BaseFragment baseFragment, ReactionsContainerLayout reactionsLayout, View cell, View fromAnimationView, float x, float y, ReactionsLayoutInBubble.VisibleReaction visibleReaction, int currentAccount, int animationType) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return;
+        }
         if (cell == null || visibleReaction == null || baseFragment == null || baseFragment.getParentActivity() == null) {
             return;
         }
@@ -823,6 +826,10 @@ public class ReactionsEffectOverlay {
     }
 
     public static void startAnimation() {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            removeCurrent(true);
+            return;
+        }
         if (currentOverlay != null) {
             currentOverlay.started = true;
             currentOverlay.startTime = System.currentTimeMillis();
@@ -843,6 +850,10 @@ public class ReactionsEffectOverlay {
     }
 
     public static void startShortAnimation() {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            removeCurrent(true);
+            return;
+        }
         if (currentShortOverlay != null && !currentShortOverlay.started) {
             currentShortOverlay.started = true;
             currentShortOverlay.startTime = System.currentTimeMillis();

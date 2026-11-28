@@ -10331,7 +10331,7 @@ public class Theme {
     }
 
     public static boolean isWallpaperMotion() {
-        return isWallpaperMotion;
+        return !org.icegram.messenger.UltraEconomyController.areEffectsDisabled() && isWallpaperMotion;
     }
 
     public static boolean isPatternWallpaper() {

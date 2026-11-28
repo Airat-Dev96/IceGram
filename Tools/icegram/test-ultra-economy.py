@@ -61,6 +61,13 @@ def main():
     connection = (JAVA / 'org/telegram/tgnet/ConnectionsManager.java').read_text()
     assert 'UltraEconomyStories.suppress(object)' in connection
     assert 'onComplete.run(null, economyError)' in connection
+    assert 'if (areEffectsDisabled())' in controller
+    assert 'return isEnabled(Option.TELEGRAM_POWER) || isEnabled(Option.NO_EFFECTS)' in controller
+    for filename in ('org/telegram/ui/EmojiAnimationsOverlay.java',
+                     'org/telegram/ui/Components/Reactions/ReactionsEffectOverlay.java',
+                     'org/telegram/ui/Components/WallpaperParallaxEffect.java',
+                     'org/telegram/ui/ProfileActivity.java'):
+        assert 'UltraEconomyController.areEffectsDisabled()' in (JAVA / filename).read_text()
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

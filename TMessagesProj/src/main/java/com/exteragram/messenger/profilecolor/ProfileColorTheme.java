@@ -355,6 +355,9 @@ public final class ProfileColorTheme implements Theme.ResourcesProvider {
     }
 
     public static MessagesController.PeerColor resolve(int account, TLRPC.User user, TLRPC.Chat chat) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            return null;
+        }
         if (user == null && chat == null) {
             return null;
         }
@@ -370,6 +373,10 @@ public final class ProfileColorTheme implements Theme.ResourcesProvider {
     }
 
     public void set(MessagesController.PeerColor peerColor, boolean animated) {
+        if (org.icegram.messenger.UltraEconomyController.areEffectsDisabled()) {
+            peerColor = null;
+            animated = false;
+        }
         if (!DebugConfig.getProfileColorDesign()) {
             peerColor = null;
         }

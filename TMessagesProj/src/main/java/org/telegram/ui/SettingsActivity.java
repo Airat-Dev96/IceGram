@@ -856,7 +856,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
         items.add(SettingCell.Factory.of(-1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.extera_outline, getString(R.string.ExteraGramSettings)));
         items.add(SettingCell.Factory.of(-2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.msg_settings, getString(R.string.AyugramSettings)));
-        items.add(SettingCell.Factory.of(-3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.ic_icegram_monochrome, getString(R.string.IcegramSettings)));
+        items.add(SettingCell.Factory.of(-3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.ic_icegram_settings, getString(R.string.IcegramSettings)));
 
         items.add(UItem.asShadow(null));
 
@@ -1365,6 +1365,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         private final TextView valueView;
         private final boolean mini;
         private boolean hasBackground = true;
+        private boolean icegramIcon;
 
         public SettingCell(Context context, Theme.ResourcesProvider resourcesProvider) {
             this(context, resourcesProvider, false);
@@ -1419,7 +1420,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             valueView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText, resourcesProvider));
             iconBackground.setDrawBorder(hasBackground && (resourcesProvider != null ? resourcesProvider.isDark() : Theme.isCurrentThemeDark()));
 
-            var shouldApplyMonet = Theme.isCurrentThemeMonet();
+            var shouldApplyMonet = Theme.isCurrentThemeMonet() && !icegramIcon;
             var monetColor = Theme.getColor(Theme.key_chats_actionIcon);
             if (hasBackground) {
                 iconView.setColorFilter(shouldApplyMonet ? monetColor : Color.WHITE, PorterDuff.Mode.SRC_IN);
@@ -1427,6 +1428,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 iconView.clearColorFilter();
             }
             iconBackground.updateColors();
+            if (icegramIcon) {
+                iconBackground.setColor(IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, false);
+            }
         }
         @Override
         public void addColorKeys(HashSet<Integer> colors) {
@@ -1444,6 +1448,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             CharSequence value
         ) {
             hasBackground = iconColorTop != 0 || iconColorBottom != 0;
+            icegramIcon = icon == R.drawable.ic_icegram_settings;
             iconLayout.setVisibility(icon != 0 ? View.VISIBLE : View.GONE);
             titleView.setTranslationX(icon == 0 ? dp(2) : 0);
             subtitleView.setTranslationX(icon == 0 ? dp(2) : 0);

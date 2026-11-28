@@ -86,6 +86,15 @@ def main():
     assert 'postDelayed' not in feedback
     assert '"EnableInChatSound"' in controller
     assert 'setNotificationsEnabled' not in controller
+    settings_screen = (JAVA / 'org/telegram/ui/SettingsActivity.java').read_text()
+    assert 'R.drawable.ic_icegram_settings, getString(R.string.IcegramSettings)' in settings_screen
+    icon = ET.parse(ROOT / 'TMessagesProj/src/main/res/drawable/ic_icegram_settings.xml').getroot()
+    android = '{http://schemas.android.com/apk/res/android}'
+    assert icon.get(android + 'width') == '24dp'
+    assert icon.get(android + 'height') == '24dp'
+    assert icon.find('path').get(android + 'strokeColor') == '#FFFFFFFF'
+    assert 'Theme.isCurrentThemeMonet() && !icegramIcon' in settings_screen
+    assert 'IconBackgroundColors.GREEN.bottom, false' in settings_screen
     for filename in ('org/telegram/ui/EmojiAnimationsOverlay.java',
                      'org/telegram/ui/Components/Reactions/ReactionsEffectOverlay.java',
                      'org/telegram/ui/Components/WallpaperParallaxEffect.java',

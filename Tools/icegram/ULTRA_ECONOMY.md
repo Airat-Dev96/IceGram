@@ -15,7 +15,7 @@ The expansion reuses existing settings instead of adding parallel power-saving s
 
 ## Settings icon diagnosis
 
-`SettingsActivity` passes `ic_icegram_monochrome` to `SettingCell`. That resource is a valid 108dp launcher vector, not a missing resource. The cell places it in a 24dp `ImageView` using `CENTER_CROP`, cropping its filled center into a white block. Its normal white `SRC_IN` tint is appropriate for the shared colored tile. Use a dedicated 24dp snowflake for this row, leaving launcher assets and other rows unchanged.
+`SettingsActivity` passed `ic_icegram_monochrome` to `SettingCell`. That resource is a valid 108dp launcher vector, not a missing resource. The cell has a 24dp `ImageView`; its factory selects `CENTER` for this row, clipping the oversized vector to its filled center, which appears as a white block. The default constructor uses `CENTER_CROP`, but the factory overrides it. The normal white `SRC_IN` tint is not the cause. A dedicated 24dp snowflake fixes the intrinsic size and path; the IceGram row retains its white glyph and green rounded tile in light, dark and Monet themes, leaving launcher assets and other rows unchanged.
 
 ## Verification boundaries
 

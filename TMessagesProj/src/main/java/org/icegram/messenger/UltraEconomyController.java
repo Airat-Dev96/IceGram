@@ -13,6 +13,7 @@ import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.NotificationsController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
@@ -33,7 +34,8 @@ public final class UltraEconomyController {
         NO_RAISE_SENSORS(1 << 4, R.string.IcegramUltraSensors, R.string.IcegramUltraSensorsInfo),
         NO_STORIES(1 << 5, R.string.IcegramUltraStories, R.string.IcegramUltraStoriesInfo),
         NO_EFFECTS(1 << 6, R.string.IcegramUltraEffects, R.string.IcegramUltraEffectsInfo),
-        PAUSE_BACKGROUND(1 << 7, R.string.IcegramUltraBackground, R.string.IcegramUltraBackgroundInfo);
+        PAUSE_BACKGROUND(1 << 7, R.string.IcegramUltraBackground, R.string.IcegramUltraBackgroundInfo),
+        PLAIN_NOTIFICATIONS(1 << 8, R.string.IcegramUltraNotifications, R.string.IcegramUltraNotificationsInfo);
 
         public final int flag;
         public final int title;
@@ -156,6 +158,7 @@ public final class UltraEconomyController {
             if (UserConfig.getInstance(account).isClientActivated()) {
                 applyContactSync(account);
                 DownloadController.getInstance(account).checkAutodownloadSettings();
+                NotificationsController.getInstance(account).showNotifications();
             }
         }
     }

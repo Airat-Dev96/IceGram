@@ -73,6 +73,12 @@ def main():
         assert 'UltraEconomyController.isBackgroundWorkPaused()' in (full_java / filename).read_text()
     assert 'if (areEffectsDisabled())' in controller
     assert 'return isEnabled(Option.TELEGRAM_POWER) || isEnabled(Option.NO_EFFECTS)' in controller
+    notifications = (JAVA / 'org/telegram/messenger/NotificationsController.java').read_text()
+    assert notifications.count('Option.PLAIN_NOTIFICATIONS') >= 7
+    assert 'addedMessage.setData("audio/ogg", uri)' in notifications
+    assert 'builder.addAction(wearReplyAction)' in notifications
+    avatars = (JAVA / 'com/exteragram/messenger/notifications/NotificationAvatars.kt').read_text()
+    assert 'Option.PLAIN_NOTIFICATIONS' in avatars.split('val size', 1)[0]
     for filename in ('org/telegram/ui/EmojiAnimationsOverlay.java',
                      'org/telegram/ui/Components/Reactions/ReactionsEffectOverlay.java',
                      'org/telegram/ui/Components/WallpaperParallaxEffect.java',

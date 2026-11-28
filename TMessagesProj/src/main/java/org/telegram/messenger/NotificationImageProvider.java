@@ -96,6 +96,9 @@ public class NotificationImageProvider extends ContentProvider implements Notifi
 	@Nullable
 	@Override
 	public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
+		if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
+			throw new FileNotFoundException("Notification media is disabled by ultra economy");
+		}
 		if (!"r".equals(mode)) {
 			throw new SecurityException("Can only open files for read");
 		}

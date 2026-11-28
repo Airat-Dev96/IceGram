@@ -29,6 +29,7 @@ object NotificationAvatars {
 
     @JvmStatic
     fun loadAvatar(currentAccount: Int, dialogId: Long, avatar: File?, peer: TLObject?, personBuilder: Person.Builder) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) return
         if (dialogId == UserObject.OAUTH || avatar?.exists() == true) {
             NotificationsController.loadRoundAvatar(dialogId, avatar, personBuilder)
             return

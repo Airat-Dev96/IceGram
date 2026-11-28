@@ -4840,6 +4840,10 @@ public class NotificationsController extends BaseController implements Notificat
                 FileLog.e(e);
             }
 
+            if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
+                largeBitmap = null;
+                photoPath = null;
+            }
             if (largeBitmap != null) {
                 mBuilder.setLargeIcon(largeBitmap);
             } else if (photoPath != null) {
@@ -5323,7 +5327,7 @@ public class NotificationsController extends BaseController implements Notificat
                 canReply = false;
             }
 
-            if (photoPath != null) {
+            if (photoPath != null && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
                 avatarFile = getFileLoader().getPathToAttach(photoPath, true);
                 if (Build.VERSION.SDK_INT < 28) {
                     BitmapDrawable img = ImageLoader.getInstance().getImageFromMemory(photoPath, null, "50_50");
@@ -5552,7 +5556,8 @@ public class NotificationsController extends BaseController implements Notificat
 
                     if (person == null || !TextUtils.equals(person.getName(), personName)) {
                         Person.Builder personBuilder = new Person.Builder().setName(personName);
-                        if (preview[0] && !DialogObject.isEncryptedDialog(dialogId) && Build.VERSION.SDK_INT >= 28) {
+                        if (preview[0] && !DialogObject.isEncryptedDialog(dialogId) && Build.VERSION.SDK_INT >= 28
+                                && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
                             File avatar = null;
                             if (DialogObject.isUserDialog(dialogId) || isChannel) {
                                 avatar = avatarFile;
@@ -5591,7 +5596,9 @@ public class NotificationsController extends BaseController implements Notificat
 
                     if (!DialogObject.isEncryptedDialog(dialogId)) {
                         boolean setPhoto = false;
-                        if (preview[0] && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !((ActivityManager) ApplicationLoader.applicationContext.getSystemService(Context.ACTIVITY_SERVICE)).isLowRamDevice()) {
+                        if (preview[0] && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                                && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)
+                                && !((ActivityManager) ApplicationLoader.applicationContext.getSystemService(Context.ACTIVITY_SERVICE)).isLowRamDevice()) {
                             if (!waitingForPasscode && !messageObject.isSecretMedia() && (messageObject.type == MessageObject.TYPE_PHOTO || messageObject.isSticker())) {
                                 File attach = getFileLoader().getPathToMessage(messageObject.messageOwner);
                                 File blurredAttach;
@@ -5680,7 +5687,9 @@ public class NotificationsController extends BaseController implements Notificat
                         if (!setPhoto) {
                             messagingStyle.addMessage(message, ((long) messageObject.messageOwner.date) * 1000, person);
                         }
-                        if (preview[0] && !waitingForPasscode && messageObject.isVoice()) {
+                        if (preview[0] && !waitingForPasscode && messageObject.isVoice()
+                                && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)
+                                && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.NO_AUTODOWNLOAD)) {
                             List<NotificationCompat.MessagingStyle.Message> messages = messagingStyle.getMessages();
                             if (!messages.isEmpty()) {
                                 File f = getFileLoader().getPathToMessage(messageObject.messageOwner);
@@ -5882,7 +5891,7 @@ public class NotificationsController extends BaseController implements Notificat
             if (DialogObject.isEncryptedDialog(dialogId)) {
                 builder.setLocalOnly(true);
             }
-            if (avatarBitmap != null) {
+            if (avatarBitmap != null && !org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
                 builder.setLargeIcon(avatarBitmap);
             }
 
@@ -6049,6 +6058,9 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     public static Person.Builder loadRoundAvatar(long dialogId, File avatar, Person.Builder personBuilder) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
+            return personBuilder;
+        }
         if (dialogId == UserObject.OAUTH) {
             personBuilder.setIcon(IconCompat.createWithResource(ApplicationLoader.applicationContext, R.drawable.ic_launcher_dr));
             return personBuilder;
@@ -6080,6 +6092,9 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     public static Bitmap loadMultipleAvatars(ArrayList<Object> avatars) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.PLAIN_NOTIFICATIONS)) {
+            return null;
+        }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || avatars == null || avatars.size() == 0) {
             return null;
         }

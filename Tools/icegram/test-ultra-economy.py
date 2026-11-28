@@ -37,6 +37,11 @@ def main():
         assert body.lstrip().startswith('{\n        if (UltraEconomyController.isEnabled(UltraEconomyController.Option.NO_AUTODOWNLOAD))'), signature
     assert 'if (!power && !noDownloads)' in downloads
     assert 'java.util.Arrays.fill(preset.mask, 0)' in downloads
+    refresh = (JAVA / "org/icegram/messenger/UltraEconomyRefreshRate.java").read_text()
+    assert 'Math.min(60f, preference.rate)' in refresh
+    assert 'limited ? 0 : preference.mode' in refresh
+    assert 'WeakHashMap<View, Preference>' in refresh
+    assert 'postDelayed' not in refresh
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

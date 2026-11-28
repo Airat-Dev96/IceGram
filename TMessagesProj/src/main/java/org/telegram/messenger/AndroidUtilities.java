@@ -2949,30 +2949,11 @@ public class AndroidUtilities {
     }
 
     public static void setPreferredMaxRefreshRate(Window window, float rate) {
-        if (window == null) return;
-        final WindowManager wm = window.getWindowManager();
-        if (wm == null) return;
-        WindowManager.LayoutParams params = window.getAttributes();
-        params.preferredRefreshRate = rate;
-        try {
-            wm.updateViewLayout(window.getDecorView(), params);
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
+        org.icegram.messenger.UltraEconomyRefreshRate.set(window, rate);
     }
 
     public static void setPreferredMaxRefreshRate(WindowManager wm, View windowView, WindowManager.LayoutParams params) {
-        if (wm == null) return;
-        if (Math.abs(params.preferredRefreshRate - screenMaxRefreshRate) > 0.2) {
-            params.preferredRefreshRate = screenMaxRefreshRate;
-            if (windowView.isAttachedToWindow()) {
-                try {
-                    wm.updateViewLayout(windowView, params);
-                } catch (Exception e) {
-                    FileLog.e(e);
-                }
-            }
-        }
+        org.icegram.messenger.UltraEconomyRefreshRate.set(wm, windowView, params, null, screenMaxRefreshRate);
     }
 
     public static double fixLocationCoord(double value) {

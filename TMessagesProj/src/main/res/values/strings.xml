@@ -11696,6 +11696,8 @@
     <string name="IcegramUltraEconomy">Ultra economy mode</string>
     <string name="IcegramUltraEconomyInfo">Text-first interface with optional battery-saving restrictions. Messages, calls and new-message notifications remain enabled. Savings depend on your device, display and usage; they are not guaranteed. Turning the mode off restores the settings saved before applying it.</string>
     <string name="IcegramUltraOptions">Battery-saving options</string>
+    <string name="IcegramUltraBlackTheme">AMOLED black theme</string>
+    <string name="IcegramUltraBlackThemeInfo">Use the existing Monet Black theme when available (Android 12+). Save the current theme and automatic night mode without removing your wallpapers. No change on unsupported devices.</string>
     <string name="IcegramUltraRefreshRate">Prefer a 60 Hz interface</string>
     <string name="IcegramUltraRefreshRateInfo">Request at most 60 Hz for app windows on high-refresh displays. Android makes the final choice. Restore previous window preferences when disabled.</string>
     <string name="IcegramUltraOptionsInfo">All options are selected each time you enable the mode. Turn any option off to restore its previous settings. Overlapping restrictions stay in effect while another selected option requires them. Static cached media may remain visible.</string>

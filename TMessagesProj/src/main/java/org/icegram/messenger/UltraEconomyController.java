@@ -10,6 +10,7 @@ import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.ui.ActionBar.Theme;
 
 import java.util.HashMap;
 
@@ -17,7 +18,8 @@ public final class UltraEconomyController {
     public enum Option {
         TELEGRAM_POWER(1, R.string.IcegramUltraNativePower, R.string.IcegramUltraNativePowerInfo),
         NO_AUTODOWNLOAD(1 << 1, R.string.IcegramUltraAutodownload, R.string.IcegramUltraAutodownloadInfo),
-        REFRESH_RATE(1 << 2, R.string.IcegramUltraRefreshRate, R.string.IcegramUltraRefreshRateInfo);
+        REFRESH_RATE(1 << 2, R.string.IcegramUltraRefreshRate, R.string.IcegramUltraRefreshRateInfo),
+        BLACK_THEME(1 << 3, R.string.IcegramUltraBlackTheme, R.string.IcegramUltraBlackThemeInfo);
 
         public final int flag;
         public final int title;
@@ -94,6 +96,7 @@ public final class UltraEconomyController {
     private static void applySettings() {
         applyNativePower();
         AndroidUtilities.runOnUIThread(UltraEconomyRefreshRate::refresh);
+        AndroidUtilities.runOnUIThread(() -> Theme.applyUltraEconomyTheme(isEnabled(Option.BLACK_THEME)));
         for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
             if (UserConfig.getInstance(account).isClientActivated()) {
                 DownloadController.getInstance(account).checkAutodownloadSettings();

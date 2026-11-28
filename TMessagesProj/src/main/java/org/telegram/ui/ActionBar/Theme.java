@@ -5817,6 +5817,45 @@ public class Theme {
         applyTheme(themeInfo, save, true, nightTheme);
     }
 
+    public static void applyUltraEconomyTheme(boolean enabled) {
+        org.icegram.messenger.UltraEconomySnapshot snapshot = new org.icegram.messenger.UltraEconomySnapshot("theme");
+        ThemeInfo black = getTheme("Monet Black");
+        SharedPreferences main = MessagesController.getGlobalMainSettings();
+        if (enabled && black != null) {
+            java.util.HashMap<String, Object> defaults = new java.util.HashMap<>();
+            defaults.put("ultraDay", getCurrentTheme().getKey());
+            defaults.put("ultraNight", currentNightTheme == null ? "" : currentNightTheme.getKey());
+            defaults.put("ultraActive", currentTheme.getKey());
+            defaults.put("ultraWasNight", isInNigthMode);
+            defaults.put("selectedAutoNightType", selectedAutoNightType);
+            if (!snapshot.capture(main, defaults, "theme", "nighttheme", "selectedAutoNightType",
+                    "ultraDay", "ultraNight", "ultraActive", "ultraWasNight")) {
+                return;
+            }
+            cancelAutoNightThemeCallbacks();
+            selectedAutoNightType = AUTO_NIGHT_TYPE_NONE;
+            ThemeInfo day = currentDayTheme;
+            applyTheme(black, false, false, false);
+            currentDayTheme = day;
+        } else if (snapshot.isSaved()) {
+            ThemeInfo day = getTheme(snapshot.getString("ultraDay", "Blue"));
+            ThemeInfo night = getTheme(snapshot.getString("ultraNight", ""));
+            ThemeInfo active = getTheme(snapshot.getString("ultraActive", "Blue"));
+            boolean wasNight = snapshot.getBoolean("ultraWasNight", false);
+            int autoNight = snapshot.getInt("selectedAutoNightType", AUTO_NIGHT_TYPE_NONE);
+            if (!snapshot.restore(main, true)) {
+                return;
+            }
+            currentDayTheme = day == null ? defaultTheme : day;
+            currentNightTheme = night;
+            isInNigthMode = wasNight;
+            selectedAutoNightType = autoNight;
+            applyTheme(active == null ? currentDayTheme : active, false, false, wasNight);
+            currentDayTheme = day == null ? defaultTheme : day;
+            AndroidUtilities.runOnUIThread(Theme::checkAutoNightThemeConditions);
+        }
+    }
+
     /** bumped by every theme apply: a background apply that finishes after a newer apply must not overwrite it */
     private static int applyThemeGeneration;
 
@@ -6880,6 +6919,10 @@ public class Theme {
     }
 
     public static void applyDayNightThemeMaybe(boolean night) {
+        if (org.icegram.messenger.UltraEconomyController.isEnabled(org.icegram.messenger.UltraEconomyController.Option.BLACK_THEME)
+                && getTheme("Monet Black") != null) {
+            return;
+        }
         if (previousTheme != null) {
             return;
         }

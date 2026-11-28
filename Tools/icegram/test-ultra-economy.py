@@ -42,6 +42,12 @@ def main():
     assert 'limited ? 0 : preference.mode' in refresh
     assert 'WeakHashMap<View, Preference>' in refresh
     assert 'postDelayed' not in refresh
+    theme = (JAVA / "org/telegram/ui/ActionBar/Theme.java").read_text()
+    black_theme = theme.split('public static void applyUltraEconomyTheme', 1)[1].split('private static int applyThemeGeneration', 1)[0]
+    assert 'applyTheme(black, false, false, false)' in black_theme
+    assert 'snapshot.getString("ultraActive"' in black_theme
+    assert 'snapshot.getInt("selectedAutoNightType"' in black_theme
+    assert 'removeOverride' not in black_theme
 
     navigation = (JAVA / "com/exteragram/messenger/config/BottomNavigationBar.kt").read_text()
     assert 'fun visible(): Boolean = !IcegramConfig.isUltraEconomyModeEnabled()' in navigation

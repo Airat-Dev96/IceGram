@@ -1,0 +1,13 @@
+--- TMessagesProj/src/main/java/org/icegram/messenger/GhostModeController.java
++++ TMessagesProj/src/main/java/org/icegram/messenger/GhostModeController.java
+@@ -46,8 +46,10 @@
+     public static boolean shouldSuppressRequest(int account, TLObject request) {
+         if (isCloudReadRequest(request)) {
+             long dialogId = getReadDialogId(request);
+             return dialogId == 0 ? IcegramConfig.areReadReceiptsHidden()
+                     : areReadReceiptsHidden(account, dialogId);
+         }
++        long dialogId = getGhostExceptionDialogId(request);
++        if (dialogId != 0 && IcegramConfig.isGhostModeDisabledForDialog(account, dialogId)) return false;
+         return shouldSuppressRequest(request);
+     }
